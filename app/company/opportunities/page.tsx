@@ -39,7 +39,10 @@ export default function CompanyOpportunities() {
     
     // If not authenticated (testing), we just fetch all for demo purposes, 
     // but in real app we filter by industry_id = user.id
-    const query = supabase.from('opportunities').select('*').order('created_at', { ascending: false })
+    const query = supabase
+      .from('opportunities')
+      .select('*, applications(count)')
+      .order('created_at', { ascending: false })
     
     // if (user) query.eq('industry_id', user.id) // Un-comment for strict user filtering
     
@@ -233,7 +236,7 @@ export default function CompanyOpportunities() {
                     </div>
                   </div>
                   <div className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold flex flex-col items-center">
-                    <span className="text-lg">0</span>
+                    <span className="text-lg">{opp.applications?.[0]?.count || 0}</span>
                     Applicants
                   </div>
                 </div>
@@ -254,7 +257,13 @@ export default function CompanyOpportunities() {
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex justify-end">
+                  <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button 
+                      onClick={() => alert('Edit feature coming soon!')}
+                      className="text-sm font-semibold text-slate-400 hover:text-slate-700 transition-colors"
+                    >
+                      Edit
+                    </button>
                     <Link 
                       href={`/company/opportunities/${opp.id}`}
                       className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-800 group"

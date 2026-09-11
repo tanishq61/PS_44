@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null)
@@ -34,10 +35,19 @@ export default function Navbar() {
     }
   }, [])
 
+  const pathname = usePathname()
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     window.location.href = '/'
   }
+
+  // Do not show this global navbar on internal dashboard routes since they have their own sidebars
+  if (pathname.startsWith('/student') || pathname.startsWith('/company') || pathname.startsWith('/institution')) {
+    return null
+  }
+
+  const dashboardHref = role === 'industry' ? '/company' : role === 'institution' ? '/institution' : '/student/profile'
 
   return (
     <header className="px-4 lg:px-6 h-14 flex items-center border-b border-gray-200 bg-white">
@@ -47,7 +57,9 @@ export default function Navbar() {
       <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
         {user ? (
           <>
-            <Link className="text-sm font-medium hover:text-blue-600 transition-colors" href="/student/profile">Profile</Link>
+            <Link className="text-sm font-medium hover:text-blue-600 transition-colors" href={dashboardHref}>
+              Dashboard
+            </Link>
             <button onClick={handleSignOut} className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
               Sign Out
             </button>

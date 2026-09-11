@@ -1,31 +1,59 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { BookOpen, AlertCircle, FileText, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 
+const cleanSkillName = (name: string) => {
+  const map: Record<string, string> = {
+    "Database Performance & Query Optimization": "Database Optimization",
+    "Algorithm Optimization & Data Structures": "Data Structures & Algorithms",
+    "Version Control & Git Workflow": "Git & Version Control",
+    "System Architecture & Asynchronous Processing": "System Architecture",
+    "Incident Triage & Debugging Methodology": "Debugging & Incident Triage",
+    "Clean Code & Refactoring": "Clean Code & Refactoring",
+    "Technical Communication & Trade-off Management": "Technical Communication",
+    "Engineering Ethics & Risk Assessment": "Engineering Ethics"
+  }
+  return map[name] || name
+}
 
-export default function ProfilePage() {
+function ProfileContent() {
   const [assessment, setAssessment] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const assessmentId = searchParams.get('assessmentId')
 
   useEffect(() => {
     async function loadProfile() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        const { data } = await supabase
-          .from('skill_assessments')
-          .select('*')
-          .eq('student_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single()
+        let assessmentData: any = null
+        if (assessmentId) {
+          const res = await supabase
+            .from('skill_assessments')
+            .select('*')
+            .eq('student_id', user.id)
+            .eq('id', assessmentId)
+            .single()
+          assessmentData = res.data
+        } else {
+          const res = await supabase
+            .from('skill_assessments')
+            .select('*')
+            .eq('student_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single()
+          assessmentData = res.data
+        }
         
-        if (data) {
-          setAssessment(data)
+        if (assessmentData) {
+          setAssessment(assessmentData)
         } else {
           setAssessment(null)
         }
@@ -35,7 +63,7 @@ export default function ProfilePage() {
       setLoading(false)
     }
     loadProfile()
-  }, [])
+  }, [assessmentId])
 
   if (loading) return (
     <div className="flex h-[50vh] items-center justify-center">
@@ -62,7 +90,7 @@ export default function ProfilePage() {
   }
 
   const chartData = Object.entries(assessment.skill_profile).map(([name, score]) => ({
-    name,
+    name: cleanSkillName(name),
     score
   })).sort((a: any, b: any) => b.score - a.score)
 
@@ -93,7 +121,7 @@ export default function ProfilePage() {
             </h2>
             {chartData.length > 0 && (
               <div className="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full border border-emerald-100">
-                Top Skill: {chartData[0].name} ({chartData[0].score}%)
+                Top Skill: {chartData[0].name} ({String(chartData[0].score)}%)
               </div>
             )}
           </div>
@@ -159,5 +187,17 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
   )
 }

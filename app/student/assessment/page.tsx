@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { BrainCircuit, Sparkles, ArrowRight, CheckCircle2, Loader2, ArrowLeft, Check } from 'lucide-react'
+import Link from 'next/link'
+import { BrainCircuit, Sparkles, ArrowRight, CheckCircle2, Loader2, ArrowLeft, Check, History } from 'lucide-react'
 
 type Question = {
   question: string;
@@ -13,18 +14,52 @@ type Question = {
 }
 
 export default function AssessmentPage() {
+  const [history, setHistory] = useState<any[]>([])
+  const [showHistory, setShowHistory] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [loadingStage, setLoadingStage] = useState('')
+  const [fetchingHistory, setFetchingHistory] = useState(true)
   const [field, setField] = useState('Software Engineering')
   const [questions, setQuestions] = useState<Question[]>([])
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [submitting, setSubmitting] = useState(false)
+  const [submitStage, setSubmitStage] = useState('')
   const [currentStep, setCurrentStep] = useState(0) // For paginated questions
   const router = useRouter()
   const supabase = createClient()
 
+  useEffect(() => {
+    async function loadHistory() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('skill_assessments')
+          .select('*')
+          .eq('student_id', user.id)
+          .order('created_at', { ascending: false })
+        
+        if (data && data.length > 0) {
+          setHistory(data)
+          setShowHistory(true)
+        } else {
+          setShowHistory(false)
+        }
+      } else {
+        setShowHistory(false)
+      }
+      setFetchingHistory(false)
+    }
+    loadHistory()
+  }, [])
+
   const startAssessment = async () => {
     if (!field.trim()) return;
     setLoading(true)
+    setLoadingStage('Analyzing skill domain...')
+
+    const stageTimer1 = setTimeout(() => setLoadingStage('Generating practical MCQs...'), 1200)
+    const stageTimer2 = setTimeout(() => setLoadingStage('Formulating scenario question...'), 2800)
+
     try {
       const res = await fetch('/api/assessment/generate', {
         method: 'POST',
@@ -32,36 +67,45 @@ export default function AssessmentPage() {
         body: JSON.stringify({ field })
       })
       const data = await res.json()
-      // Optional: mock questions if API fails or returns empty, for UI demonstration
       if (data && data.length > 0) {
         setQuestions(data)
       } else {
         setQuestions([
-          { question: "What is the primary difference between let and var in JavaScript?", type: "MCQ", options: ["Scope", "Hoisting", "Both Scope and Hoisting", "None"], skill_tag: "JavaScript" },
+          { question: "What is the primary difference between let and var in JavaScript?", type: "MCQ", options: ["Scope", "Hoisting", "Both Scope and Hoisting", "None"], skill_tag: "Software Engineering" },
           { question: "Which data structure uses LIFO (Last In First Out)?", type: "MCQ", options: ["Queue", "Stack", "Tree", "Graph"], skill_tag: "Data Structures" },
           { question: "What does the 'S' in SOLID principles stand for?", type: "MCQ", options: ["Single Responsibility", "Static Typing", "Synchronous Processing", "Scalability"], skill_tag: "Software Engineering" },
-          { question: "Explain the virtual DOM in React.", type: "TEXT", skill_tag: "React" },
-          { question: "Which CSS property is used to change the background color?", type: "MCQ", options: ["color", "bgcolor", "background-color", "bg-color"], skill_tag: "CSS" }
+          { question: "Which command records changes to a local Git repository?", type: "MCQ", options: ["git commit", "git push", "git fetch", "git rebase"], skill_tag: "Version Control" },
+          { question: "Which of the following is a document-based NoSQL database?", type: "MCQ", options: ["MongoDB", "PostgreSQL", "MySQL", "SQLite"], skill_tag: "Database Management" },
+          { question: "When multiple threads access shared resources concurrently without locks, what issue can occur?", type: "MCQ", options: ["Race condition", "Deadlock only", "Memory leak only", "Stack overflow"], skill_tag: "Computer Science Fundamentals" },
+          { question: "Which Agile meeting is held at the end of a sprint to reflect and improve?", type: "MCQ", options: ["Sprint Retrospective", "Daily Standup", "Sprint Planning", "Backlog Refinement"], skill_tag: "Team Collaboration" },
+          { question: "Describe how you approach learning an unfamiliar technology stack under tight project deadlines.", type: "short-answer", skill_tag: "Adaptability" }
         ])
       }
     } catch (e) {
       console.error(e)
-      // Fallback for demo
       setQuestions([
-        { question: "What is the primary difference between let and var in JavaScript?", type: "MCQ", options: ["Scope", "Hoisting", "Both Scope and Hoisting", "None"], skill_tag: "JavaScript" },
+        { question: "What is the primary difference between let and var in JavaScript?", type: "MCQ", options: ["Scope", "Hoisting", "Both Scope and Hoisting", "None"], skill_tag: "Software Engineering" },
         { question: "Which data structure uses LIFO (Last In First Out)?", type: "MCQ", options: ["Queue", "Stack", "Tree", "Graph"], skill_tag: "Data Structures" },
         { question: "What does the 'S' in SOLID principles stand for?", type: "MCQ", options: ["Single Responsibility", "Static Typing", "Synchronous Processing", "Scalability"], skill_tag: "Software Engineering" },
-        { question: "Explain the virtual DOM in React.", type: "TEXT", skill_tag: "React" },
-        { question: "Which CSS property is used to change the background color?", type: "MCQ", options: ["color", "bgcolor", "background-color", "bg-color"], skill_tag: "CSS" }
+        { question: "Which command records changes to a local Git repository?", type: "MCQ", options: ["git commit", "git push", "git fetch", "git rebase"], skill_tag: "Version Control" },
+        { question: "Which of the following is a document-based NoSQL database?", type: "MCQ", options: ["MongoDB", "PostgreSQL", "MySQL", "SQLite"], skill_tag: "Database Management" },
+        { question: "When multiple threads access shared resources concurrently without locks, what issue can occur?", type: "MCQ", options: ["Race condition", "Deadlock only", "Memory leak only", "Stack overflow"], skill_tag: "Computer Science Fundamentals" },
+        { question: "Which Agile meeting is held at the end of a sprint to reflect and improve?", type: "MCQ", options: ["Sprint Retrospective", "Daily Standup", "Sprint Planning", "Backlog Refinement"], skill_tag: "Team Collaboration" },
+        { question: "Describe how you approach learning an unfamiliar technology stack under tight project deadlines.", type: "short-answer", skill_tag: "Adaptability" }
       ])
     } finally {
+      clearTimeout(stageTimer1)
+      clearTimeout(stageTimer2)
       setLoading(false)
+      setLoadingStage('')
       setCurrentStep(0)
     }
   }
 
   const submitAssessment = async () => {
     setSubmitting(true)
+    setSubmitStage('Evaluating answers...')
+    const timer = setTimeout(() => setSubmitStage('Mapping 8 core skill competencies...'), 1500)
     
     const qaPairs = questions.map((q, i) => ({
       question: q.question,
@@ -91,8 +135,9 @@ export default function AssessmentPage() {
     } catch (e) {
       console.error(e)
       setSubmitting(false)
-      // For demo, route anyway if api is not fully functional
       router.push('/student/profile')
+    } finally {
+      clearTimeout(timer)
     }
   }
 
@@ -112,10 +157,60 @@ export default function AssessmentPage() {
 
   const progress = questions.length > 0 ? ((currentStep) / questions.length) * 100 : 0
 
+  if (fetchingHistory) {
+    return <div className="flex h-[50vh] items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-indigo-600" /></div>
+  }
+
+  if (showHistory) {
+    return (
+      <div className="space-y-8 max-w-4xl mx-auto animate-in fade-in duration-500">
+        <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+              <History className="text-indigo-500" /> Assessment History
+            </h1>
+            <p className="text-slate-500 mt-1">Review your past skill assessments and generate a new one.</p>
+          </div>
+          <button 
+            onClick={() => setShowHistory(false)}
+            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md"
+          >
+            <Sparkles size={18} /> Take New Assessment
+          </button>
+        </div>
+
+        <div className="grid gap-4">
+          {history.map((hist, index) => (
+            <div key={hist.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-slate-800 text-lg">Assessment #{history.length - index}</h3>
+                <p className="text-sm text-slate-500">{new Date(hist.created_at).toLocaleDateString()} at {new Date(hist.created_at).toLocaleTimeString()}</p>
+              </div>
+              <Link 
+                href={`/student/profile?assessmentId=${hist.id}`} 
+                className="text-indigo-600 font-semibold hover:text-indigo-800 hover:underline"
+              >
+                View Profile
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   if (questions.length === 0) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center animate-in fade-in zoom-in-95 duration-700">
         <div className="max-w-xl w-full bg-white rounded-3xl p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center relative overflow-hidden">
+          {history.length > 0 && (
+            <button 
+              onClick={() => setShowHistory(true)}
+              className="absolute top-6 left-6 text-slate-400 hover:text-slate-700"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          )}
           <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
             <BrainCircuit className="w-48 h-48 text-indigo-600" />
           </div>
@@ -149,9 +244,10 @@ export default function AssessmentPage() {
                 className="w-full group relative flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] disabled:opacity-70 disabled:pointer-events-none overflow-hidden"
               >
                 {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" /> Generating Assessment...
-                  </>
+                  <span className="flex items-center gap-2.5 animate-pulse text-indigo-100 font-semibold">
+                    <Loader2 className="w-5 h-5 animate-spin text-white" />
+                    {loadingStage || 'Generating Assessment...'}
+                  </span>
                 ) : (
                   <>
                     <span className="relative z-10">Start Assessment</span>
@@ -327,7 +423,9 @@ export default function AssessmentPage() {
           `}
         >
           {submitting ? (
-            <><Loader2 className="w-5 h-5 animate-spin" /> Processing AI Score...</>
+            <span className="flex items-center gap-2 animate-pulse">
+              <Loader2 className="w-5 h-5 animate-spin" /> {submitStage || 'Processing AI Score...'}
+            </span>
           ) : isLastQuestion ? (
             <><CheckCircle2 size={20} /> Complete Assessment</>
           ) : (

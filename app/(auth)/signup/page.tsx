@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+import Navbar from '@/components/Navbar'
+
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -50,13 +52,15 @@ export default function SignupPage() {
 
       // Auto-redirect based on role
       if (role === 'student') router.push('/student/profile')
-      else if (role === 'industry') router.push('/industry/opportunities')
-      else router.push('/institution/dashboard')
+      else if (role === 'industry') router.push('/company')
+      else router.push('/institution')
     }
   }
 
   return (
-    <div className="flex-1 flex flex-col justify-center items-center px-4 py-12">
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div className="flex-1 flex flex-col justify-center items-center px-4 py-12">
       <div className="w-full max-w-md space-y-6">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Create an Account</h1>
@@ -146,5 +150,6 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  </div>
   )
 }

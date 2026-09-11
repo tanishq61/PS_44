@@ -18,6 +18,21 @@ const FALLBACK_SCORE = {
   }
 };
 
+async function generateWithRetry(model: any, prompt: string, retries = 3, delayMs = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
+    } catch (error: any) {
+      console.error(`Attempt ${i + 1} failed: ${error.message}`);
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+  throw new Error("All retries failed");
+}
+
 export async function POST(req: Request) {
   try {
     const { qaPairs, roles = ["Software Engineer", "Data Analyst", "Product Manager"] } = await req.json();
@@ -29,13 +44,43 @@ export async function POST(req: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash', generationConfig: { responseMimeType: "application/json" } });
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-3.1-flash-lite', 
+      generationConfig: { 
+        responseMimeType: "application/json",
+        temperature: 0.3
+      } 
+    });
 
-    const prompt = `Score these answers 0–100 per skill_tag: ${JSON.stringify(qaPairs)}. Compare against typical requirements for these roles: ${roles.join(', ')}. Return strict JSON: {"skill_profile": {"skillName": score}, "gap_analysis": {"roleName": ["missing_skill_1", "missing_skill_2"]}}.`;
+    const prompt = `Evaluate the student's assessment answers and score each of these 8 predefined skills from 0 to 100:
+"Version Control", "Team Collaboration", "Communication Skills", "Adaptability", "Computer Science Fundamentals", "Software Engineering", "Data Structures", "Database Management".
+For any skill not directly tested, calculate a realistic baseline score (65-80) based on their overall technical and problem-solving level.
+Student responses:
+${JSON.stringify(qaPairs)}
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().replace(/```json/gi, '').replace(/```/g, '').trim();
+Target roles for gap analysis: ${roles.join(', ')}.
+Identify 2-3 genuine skill gaps per role based on their performance.
+
+Return strict JSON format:
+{
+  "skill_profile": {
+    "Version Control": 85,
+    "Team Collaboration": 80,
+    "Communication Skills": 75,
+    "Adaptability": 70,
+    "Computer Science Fundamentals": 75,
+    "Software Engineering": 80,
+    "Data Structures": 70,
+    "Database Management": 85
+  },
+  "gap_analysis": {
+    "Software Engineer": ["Skill Gap 1", "Skill Gap 2"],
+    "Data Analyst": ["Skill Gap 1", "Skill Gap 2"],
+    "Product Manager": ["Skill Gap 1", "Skill Gap 2"]
+  }
+}`;
+
+    const text = await generateWithRetry(model, prompt, 2, 1000);
     
     return NextResponse.json(JSON.parse(text));
   } catch (error) {

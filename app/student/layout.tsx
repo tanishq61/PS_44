@@ -8,6 +8,7 @@ import {
   ClipboardCheck, 
   Briefcase, 
   FileBadge2,
+  Compass,
   LogOut,
   Menu,
   X
@@ -19,6 +20,7 @@ const navItems = [
   { name: 'Skill Profile', href: '/student/profile', icon: UserCircle },
   { name: 'Assessments', href: '/student/assessment', icon: ClipboardCheck },
   { name: 'Opportunities', href: '/student/opportunities', icon: Briefcase },
+  { name: 'Learning Path', href: '/student/learning', icon: Compass },
   { name: 'Portfolio', href: '/student/portfolio', icon: FileBadge2 },
 ]
 
@@ -92,10 +94,18 @@ export default function StudentLayout({
         </nav>
 
         <div className="p-4 border-t border-slate-200/60">
-          <Link href="/" className="flex w-full items-center gap-3 px-4 py-3 text-slate-600 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors">
+          <button 
+            onClick={async () => {
+              const { createClient } = await import('@/lib/supabase');
+              const supabase = createClient();
+              await supabase.auth.signOut();
+              window.location.href = '/login';
+            }}
+            className="flex w-full items-center gap-3 px-4 py-3 text-slate-600 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors"
+          >
             <LogOut className="h-5 w-5 text-slate-400 group-hover:text-rose-500" />
             Sign Out
-          </Link>
+          </button>
         </div>
       </aside>
 

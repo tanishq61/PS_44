@@ -6,9 +6,24 @@ import { ArrowRight, Sparkles, TrendingUp, Target, Award, BrainCircuit } from 'l
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { createClient } from '@/lib/supabase'
 
+const cleanSkillName = (name: string) => {
+  const map: Record<string, string> = {
+    "Database Performance & Query Optimization": "Database Optimization",
+    "Algorithm Optimization & Data Structures": "Data Structures & Algorithms",
+    "Version Control & Git Workflow": "Git & Version Control",
+    "System Architecture & Asynchronous Processing": "System Architecture",
+    "Incident Triage & Debugging Methodology": "Debugging & Incident Triage",
+    "Clean Code & Refactoring": "Clean Code & Refactoring",
+    "Technical Communication & Trade-off Management": "Technical Communication",
+    "Engineering Ethics & Risk Assessment": "Engineering Ethics"
+  }
+  return map[name] || name
+}
+
 export default function StudentDashboard() {
   const [userName, setUserName] = useState<string>('')
   const [assessment, setAssessment] = useState<any>(null)
+  const [opportunities, setOpportunities] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -31,6 +46,9 @@ export default function StudentDashboard() {
           if (data) {
             setAssessment(data)
           }
+
+          const { data: opps } = await supabase.from('opportunities').select('*')
+          if (opps) setOpportunities(opps)
         }
       } catch (err) {
         console.error(err)
@@ -41,9 +59,35 @@ export default function StudentDashboard() {
     loadUserData()
   }, [])
 
+  // AI Matching calculation
+  const calculateMatchScore = (requiredSkills: string[], studentProfile: Record<string, number>) => {
+    if (!requiredSkills || requiredSkills.length === 0) return 100
+    if (!studentProfile) return 0
+
+    let totalScore = 0
+    let matchCount = 0
+
+    requiredSkills.forEach(reqSkill => {
+      const reqLower = reqSkill.toLowerCase()
+      let bestScore = 0
+      Object.entries(studentProfile).forEach(([studentSkill, score]) => {
+        const studentLower = studentSkill.toLowerCase()
+        if (studentLower.includes(reqLower) || reqLower.includes(studentLower)) {
+          bestScore = Math.max(bestScore, Number(score))
+        }
+      })
+      totalScore += bestScore
+      if (bestScore > 0) matchCount++
+    })
+
+    const rawAverage = totalScore / requiredSkills.length
+    const coverageMultiplier = matchCount === requiredSkills.length ? 1.1 : 1.0
+    return Math.min(100, Math.round(rawAverage * coverageMultiplier))
+  }
+
   const allSkills = assessment?.skill_profile
     ? Object.entries(assessment.skill_profile).map(([name, score]) => ({
-        name,
+        name: cleanSkillName(name),
         score: Number(score)
       })).sort((a, b) => b.score - a.score)
     : []
@@ -51,7 +95,12 @@ export default function StudentDashboard() {
   const skillsData = allSkills.slice(0, 5)
   const topSkill = allSkills.length > 0 ? allSkills[0] : null
 
-  const profileCompletion = assessment ? 85 : 30
+  const profileCompletion = assessment ? 80 : 30
+
+  // Count high match opportunities (> 70%)
+  const highMatchCount = assessment && opportunities.length > 0
+    ? opportunities.filter(opp => calculateMatchScore(opp.required_skills, assessment.skill_profile) >= 70).length
+    : 0
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
@@ -128,7 +177,7 @@ export default function StudentDashboard() {
           <div>
             <p className="text-sm font-medium text-slate-500 mb-1">Opportunities</p>
             <div className="flex items-end gap-2">
-              <h3 className="text-3xl font-bold text-slate-800">{assessment ? '8' : 'Available'}</h3>
+              <h3 className="text-3xl font-bold text-slate-800">{assessment ? highMatchCount : opportunities.length || 'Available'}</h3>
               <span className="text-xs font-medium text-emerald-600 mb-1 flex items-center">
                 <TrendingUp size={12} className="mr-1"/> {assessment ? 'AI Matched' : 'Explore all'}
               </span>

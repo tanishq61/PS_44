@@ -4,11 +4,11 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import {
-  Building2,
+  GraduationCap,
   LayoutDashboard,
-  Briefcase,
   Users,
-  User,
+  Briefcase,
+  UserCircle,
   LogOut,
   Menu,
   X
@@ -16,13 +16,12 @@ import {
 import { useState } from 'react'
 
 const navItems = [
-  { name: 'Dashboard', href: '/company', icon: LayoutDashboard },
-  { name: 'Opportunities', href: '/company/opportunities', icon: Briefcase },
-  { name: 'Candidates', href: '/company/candidates', icon: Users },
-  { name: 'Profile', href: '/company/profile', icon: User },
+  { name: 'Dashboard', href: '/institution', icon: LayoutDashboard },
+  { name: 'Student Analytics', href: '/institution/students', icon: Users },
+  { name: 'Profile', href: '/institution/profile', icon: UserCircle },
 ]
 
-export default function CompanyLayout({
+export default function InstitutionLayout({
   children,
 }: {
   children: React.ReactNode
@@ -42,12 +41,12 @@ export default function CompanyLayout({
       {/* Mobile Menu Button */}
       <div className="md:hidden p-4 bg-white border-b border-slate-200 flex justify-between items-center z-20 relative">
         <span className="font-bold text-xl text-slate-900 flex items-center gap-2">
-          <Building2 className="text-blue-600" size={24} />
-          Industry Portal
+          <GraduationCap className="text-emerald-600" size={24} />
+          Institution Portal
         </span>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="text-slate-600 hover:text-blue-600 transition-colors"
+          className="text-slate-600 hover:text-emerald-600 transition-colors"
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -66,15 +65,15 @@ export default function CompanyLayout({
       >
         <div className="p-6 hidden md:block border-b border-slate-800">
           <span className="font-bold text-2xl tracking-tight text-white flex items-center gap-3">
-            <Building2 className="text-blue-500" />
-            Industry
+            <GraduationCap className="text-emerald-500" />
+            Institution
           </span>
-          <div className="mt-1 text-xs font-medium text-slate-500 uppercase tracking-wider">Recruitment Portal</div>
+          <div className="mt-1 text-xs font-medium text-slate-500 uppercase tracking-wider">Academic Portal</div>
         </div>
 
         <nav className="flex-1 px-4 py-6 md:py-6 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/company' && pathname.startsWith(item.href))
+            const isActive = pathname === item.href || (item.href !== '/institution' && pathname.startsWith(item.href))
             const Icon = item.icon
 
             return (
@@ -85,15 +84,15 @@ export default function CompanyLayout({
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden
                   ${isActive
-                    ? 'text-white bg-blue-600 font-medium shadow-[0_0_15px_rgba(37,99,235,0.3)]'
+                    ? 'text-white bg-emerald-600 font-medium shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                     : 'hover:text-white hover:bg-slate-800'
                   }
                 `}
               >
                 {isActive && (
-                  <span className="absolute left-0 top-0 bottom-0 w-1 bg-blue-400 rounded-r-full" />
+                  <span className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-400 rounded-r-full" />
                 )}
-                <Icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-blue-400'}`} />
+                <Icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-emerald-400'}`} />
                 {item.name}
               </Link>
             )

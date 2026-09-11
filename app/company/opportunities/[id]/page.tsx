@@ -8,45 +8,11 @@ import {
   ArrowLeft,
   Briefcase,
   Clock,
-  MapPin,
-  Users,
   Sparkles,
   CheckCircle2,
   Mail,
-  ExternalLink,
-  Loader2
+  Users
 } from 'lucide-react'
-
-// Mock Applicants Data to demonstrate AI Matching
-const mockApplicants = [
-  {
-    id: '1',
-    name: 'Alex Johnson',
-    university: 'Stanford University',
-    matchScore: 94,
-    skills: ['React', 'TypeScript', 'Node.js', 'System Design'],
-    missingSkills: ['GraphQL'],
-    status: 'Shortlisted'
-  },
-  {
-    id: '2',
-    name: 'Priya Patel',
-    university: 'MIT',
-    matchScore: 88,
-    skills: ['React', 'JavaScript', 'Python'],
-    missingSkills: ['TypeScript', 'System Design'],
-    status: 'Applied'
-  },
-  {
-    id: '3',
-    name: 'David Chen',
-    university: 'UC Berkeley',
-    matchScore: 65,
-    skills: ['Python', 'Django', 'SQL'],
-    missingSkills: ['React', 'TypeScript', 'Node.js'],
-    status: 'Applied'
-  }
-]
 
 export default function OpportunityDetails() {
   const params = useParams()
@@ -54,14 +20,79 @@ export default function OpportunityDetails() {
   const id = params.id as string
   
   const [opportunity, setOpportunity] = useState<any>(null)
+  const [applicants, setApplicants] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
     async function loadOpp() {
       if (!id) return
-      const { data } = await supabase.from('opportunities').select('*').eq('id', id).single()
-      if (data) setOpportunity(data)
+      
+      // 1. Fetch Opportunity
+      const { data: opp } = await supabase.from('opportunities').select('*').eq('id', id).single()
+      if (opp) setOpportunity(opp)
+
+      // 2. Fetch Real Applications + Profile info
+      const { data: apps } = await supabase
+        .from('applications')
+        .select(`
+          id,
+          status,
+          match_score,
+          applied_at,
+          student_id,
+          profiles (
+            full_name
+          )
+        `)
+        .eq('opportunity_id', id)
+        .order('match_score', { ascending: false })
+
+      if (apps && apps.length > 0) {
+        // 3. For each applicant, fetch their latest verified skills
+        const applicantsWithSkills = await Promise.all(apps.map(async (app: any) => {
+          const { data: assessment } = await supabase
+            .from('skill_assessments')
+            .select('skill_profile')
+            .eq('student_id', app.student_id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single()
+
+          const skillsData = assessment?.skill_profile || {}
+          const studentSkills = Object.keys(skillsData)
+          
+          // Determine matching vs missing skills based on the opportunity requirements
+          const reqSkills = opp?.required_skills || []
+          const matched: string[] = []
+          const missing: string[] = []
+
+          reqSkills.forEach((req: string) => {
+            const hasSkill = studentSkills.some(s => s.toLowerCase().includes(req.toLowerCase()) || req.toLowerCase().includes(s.toLowerCase()))
+            if (hasSkill) {
+              matched.push(req)
+            } else {
+              missing.push(req)
+            }
+          })
+
+          return {
+            id: app.id,
+            student_id: app.student_id,
+            name: app.profiles?.full_name || 'Anonymous Student',
+            matchScore: app.match_score || 0,
+            status: app.status,
+            appliedAt: app.applied_at,
+            matchedSkills: matched,
+            missingSkills: missing,
+            otherSkills: studentSkills.filter(s => !matched.includes(s)).slice(0, 3) // showing a few other skills they have
+          }
+        }))
+        setApplicants(applicantsWithSkills)
+      } else {
+        setApplicants([])
+      }
+
       setLoading(false)
     }
     loadOpp()
@@ -123,11 +154,8 @@ export default function OpportunityDetails() {
             </div>
             
             <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl min-w-[200px] text-center">
-              <div className="text-sm font-bold text-slate-500 mb-1">Total Applicants</div>
-              <div className="text-4xl font-black text-slate-800">3</div>
-              <div className="text-xs font-semibold text-emerald-600 mt-2 bg-emerald-50 py-1 rounded-md">
-                +2 in last 24h
-              </div>
+              <div className="text-sm font-bold text-slate-500 mb-1">Real Applicants</div>
+              <div className="text-4xl font-black text-slate-800">{applicants.length}</div>
             </div>
           </div>
         </div>
@@ -140,12 +168,18 @@ export default function OpportunityDetails() {
             <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
               <Sparkles className="text-blue-500" /> AI Matched Candidates
             </h2>
-            <p className="text-slate-500 mt-1 text-sm">Candidates are automatically scored based on their verified skill assessments.</p>
+            <p className="text-slate-500 mt-1 text-sm">Real candidates scored automatically based on their verified skill assessments.</p>
           </div>
         </div>
 
         <div className="grid gap-6">
-          {mockApplicants.map((applicant) => (
+          {applicants.length === 0 ? (
+             <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm flex flex-col items-center">
+               <Users className="w-12 h-12 text-slate-300 mb-4" />
+               <h3 className="text-xl font-bold text-slate-700 mb-2">No applications yet</h3>
+               <p className="text-slate-500">When students apply to this role from the student portal, they will appear here with an AI match score.</p>
+             </div>
+          ) : applicants.map((applicant) => (
             <div key={applicant.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all flex flex-col md:flex-row gap-6 md:items-center">
               
               {/* Match Score Ring */}
@@ -178,24 +212,26 @@ export default function OpportunityDetails() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="text-xl font-bold text-slate-800">{applicant.name}</h3>
-                    <p className="text-slate-500 text-sm font-medium">{applicant.university}</p>
+                    <p className="text-slate-500 text-sm font-medium flex items-center gap-1">
+                      Applied {new Date(applicant.appliedAt).toLocaleDateString()}
+                    </p>
                   </div>
                   <span className={`px-3 py-1 text-xs font-bold rounded-full border ${
-                    applicant.status === 'Shortlisted' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-600'
+                    applicant.status === 'shortlisted' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-600'
                   }`}>
-                    {applicant.status}
+                    {applicant.status.toUpperCase()}
                   </span>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4 mt-4">
                   <div>
                     <div className="text-xs font-bold text-emerald-600 mb-1 flex items-center gap-1">
-                      <CheckCircle2 size={12} /> Verified Matches
+                      <CheckCircle2 size={12} /> Verified Role Matches
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      {applicant.skills.map((s, i) => (
-                        <span key={i} className="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded-md font-semibold">{s}</span>
-                      ))}
+                      {applicant.matchedSkills.length > 0 ? applicant.matchedSkills.map((s: string, i: number) => (
+                        <span key={i} className="text-xs px-2 py-1 bg-emerald-50 text-emerald-700 rounded-md font-semibold">{s}</span>
+                      )) : <span className="text-xs text-slate-400">No direct matches</span>}
                     </div>
                   </div>
                   
@@ -203,7 +239,7 @@ export default function OpportunityDetails() {
                     <div>
                       <div className="text-xs font-bold text-rose-500 mb-1">Missing / Unverified</div>
                       <div className="flex flex-wrap gap-1.5">
-                        {applicant.missingSkills.map((s, i) => (
+                        {applicant.missingSkills.map((s: string, i: number) => (
                           <span key={i} className="text-xs px-2 py-1 bg-rose-50 text-rose-600 rounded-md font-semibold">{s}</span>
                         ))}
                       </div>
@@ -214,10 +250,16 @@ export default function OpportunityDetails() {
 
               {/* Actions */}
               <div className="flex flex-row md:flex-col gap-2 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
-                <button className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl transition-colors">
+                <Link 
+                  href={`/company/students/${applicant.student_id || 'candidate'}`}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl transition-colors"
+                >
                   View Profile
-                </button>
-                <button className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-sm font-bold rounded-xl transition-colors">
+                </Link>
+                <button 
+                  onClick={() => alert(`Contact feature for ${applicant.name} is coming soon!`)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-sm font-bold rounded-xl transition-colors"
+                >
                   <Mail size={16} /> Contact
                 </button>
               </div>

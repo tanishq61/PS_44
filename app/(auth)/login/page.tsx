@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+import Navbar from '@/components/Navbar'
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -34,8 +36,8 @@ export default function LoginPage() {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
       
       if (profile?.role === 'student') router.push('/student/profile')
-      else if (profile?.role === 'industry') router.push('/industry/opportunities')
-      else if (profile?.role === 'institution') router.push('/institution/dashboard')
+      else if (profile?.role === 'industry') router.push('/company')
+      else if (profile?.role === 'institution') router.push('/institution')
       else {
         router.refresh()
         router.push('/')
@@ -44,7 +46,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col justify-center items-center px-4">
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div className="flex-1 flex flex-col justify-center items-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Log In</h1>
@@ -91,5 +95,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  </div>
   )
 }
