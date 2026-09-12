@@ -134,7 +134,7 @@ function ProfileContent() {
                 <XAxis type="number" domain={[0, 100]} hide />
                 <YAxis dataKey="name" type="category" width={160} tickLine={false} axisLine={false} tick={{fill: '#94a3b8', fontSize: 13, fontWeight: 500}} />
                 <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{backgroundColor: '#121212', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff'}} />
-                <Bar dataKey="score" radius={[0, 8, 8, 0]} barSize={28} background={{ fill: 'rgba(255,255,255,0.02)', radius: [0, 8, 8, 0] }}>
+                <Bar dataKey="score" radius={[0, 8, 8, 0] as any} barSize={28} background={{ fill: 'rgba(255,255,255,0.02)', radius: [0, 8, 8, 0] as any }}>
                   {
                     chartData.map((entry: any, index) => (
                       <Cell key={`cell-${index}`} fill={entry.score > 80 ? '#10b981' : entry.score > 60 ? '#6366f1' : '#f59e0b'} />

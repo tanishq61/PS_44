@@ -12,7 +12,12 @@ export default function BentoFeatures() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    import('gsap').then(({ default: gsap, ScrollTrigger }) => {
+    Promise.all([
+      import('gsap'),
+      import('gsap/ScrollTrigger')
+    ]).then(([gsapPkg, scrollTriggerPkg]) => {
+      const gsap = gsapPkg.default
+      const ScrollTrigger = scrollTriggerPkg.default
       gsap.registerPlugin(ScrollTrigger)
       
       if (!containerRef.current) return
