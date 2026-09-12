@@ -94,44 +94,47 @@ function ProfileContent() {
     score
   })).sort((a: any, b: any) => b.score - a.score)
 
+  // Dynamic Gap Analysis based on the actual lowest scores in the assessment
+  const lowestSkills = [...chartData].reverse().slice(0, 3);
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out z-10 relative">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glass-panel p-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-            Skill Profile <Sparkles className="text-indigo-500 w-6 h-6" />
+          <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+            Skill Profile <Sparkles className="text-indigo-400 w-6 h-6" />
           </h1>
-          <p className="text-slate-500 mt-1">Your AI-analyzed skill breakdown and gap analysis.</p>
+          <p className="text-slate-400 mt-1">Your AI-analyzed skill breakdown and gap analysis.</p>
         </div>
         <Link 
           href="/student/opportunities"
-          className="inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-md"
+          className="premium-button-primary px-6 py-3"
         >
-          View Matched Jobs <ArrowRight size={18} />
+          View Matched Jobs <ArrowRight className="ml-2 w-4 h-4" />
         </Link>
       </div>
 
       <div className="grid lg:grid-cols-5 gap-8">
         {/* Assessed Skills Chart */}
-        <div className="lg:col-span-3 bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
+        <div className="lg:col-span-3 glass-panel p-8 flex flex-col">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <BookOpen className="text-indigo-500 h-6 w-6" />
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <BookOpen className="text-indigo-400 h-6 w-6" />
               Verified Skills
             </h2>
             {chartData.length > 0 && (
-              <div className="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full border border-emerald-100">
+              <div className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/20">
                 Top Skill: {chartData[0].name} ({String(chartData[0].score)}%)
               </div>
             )}
           </div>
           <div className="flex-1 min-h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} layout="vertical" margin={{ left: -10 }}>
+              <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
                 <XAxis type="number" domain={[0, 100]} hide />
-                <YAxis dataKey="name" type="category" width={110} tickLine={false} axisLine={false} tick={{fill: '#475569', fontSize: 13, fontWeight: 500}} />
-                <Tooltip cursor={{fill: 'transparent'}} contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)'}} />
-                <Bar dataKey="score" radius={[0, 8, 8, 0]} barSize={28}>
+                <YAxis dataKey="name" type="category" width={160} tickLine={false} axisLine={false} tick={{fill: '#94a3b8', fontSize: 13, fontWeight: 500}} />
+                <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{backgroundColor: '#121212', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff'}} />
+                <Bar dataKey="score" radius={[0, 8, 8, 0]} barSize={28} background={{ fill: 'rgba(255,255,255,0.02)', radius: [0, 8, 8, 0] }}>
                   {
                     chartData.map((entry: any, index) => (
                       <Cell key={`cell-${index}`} fill={entry.score > 80 ? '#10b981' : entry.score > 60 ? '#6366f1' : '#f59e0b'} />
@@ -145,43 +148,38 @@ function ProfileContent() {
 
         {/* Gap Analysis */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-8 rounded-3xl shadow-lg border border-indigo-800 text-white relative overflow-hidden">
+          <div className="premium-card p-8 text-white relative overflow-hidden h-full flex flex-col">
             <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
-              <AlertCircle className="w-32 h-32" />
+              <AlertCircle className="w-32 h-32 text-indigo-400" />
             </div>
-            <div className="relative z-10">
-              <h2 className="text-2xl font-bold mb-2">Gap Analysis</h2>
-              <p className="text-indigo-200 text-sm mb-8">AI-identified areas for improvement based on your target roles.</p>
+            <div className="relative z-10 flex-1 flex flex-col">
+              <h2 className="text-2xl font-bold mb-2">Skill Gaps & Learning</h2>
+              <p className="text-indigo-200 text-sm mb-6 font-light">Based on your assessment, these are the key areas you should focus on to improve your industry readiness.</p>
               
-              <div className="space-y-6">
-                {Object.entries(assessment.gap_analysis).map(([role, gaps]: [string, any]) => (
-                  <div key={role} className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5">
-                    <h3 className="font-bold text-lg mb-3 flex items-center justify-between">
-                      {role}
-                      {gaps.length === 0 && <span className="bg-emerald-500/20 text-emerald-300 text-xs px-2 py-1 rounded-full">Ready</span>}
-                    </h3>
-                    
-                    <ul className="space-y-2">
-                      {gaps.length > 0 ? gaps.map((gap: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-indigo-100">
-                          <div className="min-w-1.5 min-h-1.5 mt-1.5 bg-amber-400 rounded-full" />
-                          {gap}
-                        </li>
-                      )) : (
-                        <li className="flex items-center gap-2 text-sm text-emerald-300">
-                          <CheckCircle2 className="w-4 h-4" /> Highly compatible, minimal gaps.
-                        </li>
-                      )}
-                    </ul>
-                    
-                    {gaps.length > 0 && (
-                      <button className="mt-4 w-full py-2 bg-indigo-500/20 hover:bg-indigo-500/40 border border-indigo-400/30 rounded-xl text-sm font-medium transition-colors">
-                        Generate Learning Path
-                      </button>
-                    )}
-                  </div>
-                ))}
+              <div className="bg-[rgba(255,255,255,0.02)] backdrop-blur-md border border-[rgba(255,255,255,0.05)] rounded-2xl p-5 mb-6 flex-1">
+                <h3 className="font-bold text-lg mb-4 text-white">Identified Gaps</h3>
+                <ul className="space-y-4">
+                  {lowestSkills.length > 0 ? lowestSkills.map((skill: any, i: number) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-slate-300">
+                      <div className="min-w-2 min-h-2 mt-1.5 bg-amber-400 rounded-full shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+                      <div>
+                        <span className="font-semibold text-white block mb-0.5">{skill.name}</span>
+                        <p className="text-slate-400 text-xs">Current Score: <span className="text-amber-400 font-medium">{skill.score}%</span> — Needs improvement</p>
+                      </div>
+                    </li>
+                  )) : (
+                    <li className="flex items-center gap-2 text-sm text-emerald-400">
+                      <CheckCircle2 className="w-4 h-4" /> Highly compatible, no major gaps identified.
+                    </li>
+                  )}
+                </ul>
               </div>
+              
+              {lowestSkills.length > 0 && (
+                <Link href="/student/learning" className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-sm font-bold text-white transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] flex justify-center items-center gap-2">
+                  <Sparkles size={18} /> Generate Personalized Learning Path
+                </Link>
+              )}
             </div>
           </div>
         </div>

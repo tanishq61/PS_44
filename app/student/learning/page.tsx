@@ -56,14 +56,23 @@ export default function StudentLearning() {
       // 1. Get latest assessment for gap analysis
       const { data: assessment } = await supabase
         .from('skill_assessments')
-        .select('gap_analysis')
+        .select('gap_analysis, skill_profile')
         .eq('student_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
 
       let currentGaps: string[] = []
-      if (assessment?.gap_analysis) {
+      if (assessment?.skill_profile) {
+        // Calculate gaps dynamically from lowest scores to match the profile page
+        const chartData = Object.entries(assessment.skill_profile).map(([name, score]) => ({
+          name,
+          score: Number(score)
+        })).sort((a: any, b: any) => b.score - a.score);
+        
+        currentGaps = [...chartData].reverse().slice(0, 3).map((s: any) => s.name);
+        setGaps(currentGaps)
+      } else if (assessment?.gap_analysis) {
         currentGaps = Array.from(new Set(Object.values(assessment.gap_analysis).flat() as string[]))
         setGaps(currentGaps)
       }
@@ -181,14 +190,14 @@ export default function StudentLearning() {
       </div>
 
       {gaps.length === 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start gap-4">
-          <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+        <div className="premium-card p-6 flex items-start gap-4">
+          <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg">
             <BookOpen size={20} />
           </div>
           <div>
-            <h3 className="font-bold text-amber-900 mb-1">No Skill Gaps Found</h3>
-            <p className="text-amber-700 text-sm mb-3">Take the AI skill assessment first to identify areas for improvement and generate a customized path.</p>
-            <Link href="/student/assessment" className="text-sm font-bold text-amber-700 hover:text-amber-900 underline">Take Assessment Now</Link>
+            <h3 className="font-bold text-white mb-1">No Skill Gaps Found</h3>
+            <p className="text-slate-400 text-sm mb-3">Take the AI skill assessment first to identify areas for improvement and generate a customized path.</p>
+            <Link href="/student/assessment" className="text-sm font-bold text-indigo-400 hover:text-indigo-300 underline">Take Assessment Now</Link>
           </div>
         </div>
       )}
@@ -201,22 +210,22 @@ export default function StudentLearning() {
         const isAllCompleted = completedCount === totalSteps && totalSteps > 0
 
         return (
-          <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-slate-200">
+          <div className="premium-card p-8 md:p-10 rounded-3xl">
             {/* Header & Overall Progress */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-[rgba(255,255,255,0.05)]">
               <div>
-                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
-                  <Compass className="text-indigo-600 w-7 h-7" /> Your Step-by-Step Roadmap
+                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                  <Compass className="text-indigo-400 w-7 h-7" /> Your Step-by-Step Roadmap
                 </h2>
-                <p className="text-slate-500 text-sm mt-1">
+                <p className="text-slate-400 text-sm mt-1">
                   Check off each milestone as you complete it to track your real-time learning progress.
                 </p>
               </div>
 
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Progress</div>
-                  <div className="text-xl font-extrabold text-indigo-600">
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Overall Progress</div>
+                  <div className="text-xl font-extrabold text-indigo-400">
                     {completedCount} / {totalSteps} <span className="text-sm font-semibold text-slate-500">({progressPercent}%)</span>
                   </div>
                 </div>
@@ -233,7 +242,7 @@ export default function StudentLearning() {
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 mb-8">
+            <div className="w-full h-3 bg-[#0a0a0a] rounded-full overflow-hidden p-0.5 mb-8 border border-[rgba(255,255,255,0.05)]">
               <div 
                 className={`h-full transition-all duration-700 ease-out rounded-full shadow-sm ${
                   isAllCompleted 
@@ -300,38 +309,38 @@ export default function StudentLearning() {
                     <div 
                       onClick={() => toggleStep(index)}
                       className={`
-                        p-6 md:p-7 rounded-2xl border-2 transition-all cursor-pointer select-none
+                        p-6 md:p-7 rounded-2xl border transition-all cursor-pointer select-none
                         ${isCompleted 
-                          ? 'bg-emerald-50/40 border-emerald-200/80 shadow-sm' 
-                          : 'bg-slate-50 border-slate-100 hover:border-indigo-200 hover:bg-white hover:shadow-md'
+                          ? 'bg-emerald-500/10 border-emerald-500/20 shadow-sm' 
+                          : 'bg-[#0a0a0a] border-[rgba(255,255,255,0.05)] hover:border-indigo-500/30 hover:bg-[#0c0c0e] hover:shadow-md'
                         }
                       `}
                     >
                       <div className="flex flex-wrap justify-between items-start gap-4 mb-3">
                         <div className="flex items-center gap-3">
-                          <h3 className={`text-xl font-bold transition-colors ${isCompleted ? 'text-emerald-950 line-through decoration-emerald-500 decoration-2 opacity-80' : 'text-slate-800'}`}>
+                          <h3 className={`text-xl font-bold transition-colors ${isCompleted ? 'text-emerald-400/80 line-through decoration-emerald-500/50 decoration-2 opacity-80' : 'text-slate-200'}`}>
                             Step {index + 1}: {step.title}
                           </h3>
                         </div>
                         
                         <div className="flex items-center gap-2">
                           <span className={`px-2.5 py-1 text-xs font-bold rounded-md ${
-                            isCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-indigo-100 text-indigo-700'
+                            isCompleted ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/20 text-indigo-400'
                           }`}>
                             {step.type}
                           </span>
-                          <span className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-md bg-slate-200 text-slate-700">
+                          <span className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-md bg-slate-800 text-slate-300">
                             <Clock size={12} /> {step.duration}
                           </span>
                           <span className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
-                            isCompleted ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-200/70 text-slate-500'
+                            isCompleted ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400'
                           }`}>
                             {isCompleted ? 'Completed ✓' : 'Mark Done'}
                           </span>
                         </div>
                       </div>
                       
-                      <p className={`leading-relaxed transition-colors ${isCompleted ? 'text-emerald-800/80' : 'text-slate-600'}`}>
+                      <p className={`leading-relaxed transition-colors ${isCompleted ? 'text-emerald-400/70' : 'text-slate-400'}`}>
                         {step.description}
                       </p>
                     </div>
@@ -345,46 +354,46 @@ export default function StudentLearning() {
 
       {/* Industry Courses */}
       <div className="mt-12">
-        <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-          <BookOpen className="text-indigo-600" /> Recommended Industry Programs
+        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+          <BookOpen className="text-indigo-400" /> Recommended Industry Programs
         </h2>
         
         <div className="grid md:grid-cols-2 gap-6">
           {recommendedCourses.length === 0 ? (
-            <div className="col-span-2 bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm">
-              <PlayCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-slate-700 mb-2">No active programs</h3>
-              <p className="text-slate-500">There are currently no matching courses or workshops. Check back later!</p>
+            <div className="col-span-2 premium-card rounded-3xl p-12 text-center">
+              <PlayCircle className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-slate-200 mb-2">No active programs</h3>
+              <p className="text-slate-400">There are currently no matching courses or workshops. Check back later!</p>
             </div>
           ) : (
             recommendedCourses.map(course => (
-              <div key={course.id} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow flex flex-col group">
+              <div key={course.id} className="premium-card rounded-3xl p-6 flex flex-col group">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className={`px-2.5 py-1 text-xs font-bold rounded-md ${course.type === 'course' ? 'bg-emerald-50 text-emerald-700' : 'bg-purple-50 text-purple-700'}`}>
+                  <span className={`px-2.5 py-1 text-xs font-bold rounded-md ${course.type === 'course' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-purple-500/10 text-purple-400'}`}>
                     {course.type.toUpperCase()}
                   </span>
-                  <span className="text-sm font-semibold text-slate-500">{course.profiles?.org_name}</span>
+                  <span className="text-sm font-semibold text-slate-400">{course.profiles?.org_name}</span>
                 </div>
                 
-                <h3 className="text-xl font-bold text-slate-800 mb-3">{course.title}</h3>
-                <p className="text-slate-600 text-sm mb-6 line-clamp-3 flex-1">
+                <h3 className="text-xl font-bold text-slate-200 mb-3">{course.title}</h3>
+                <p className="text-slate-400 text-sm mb-6 line-clamp-3 flex-1">
                   {course.description}
                 </p>
 
-                <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
+                <div className="pt-4 border-t border-[rgba(255,255,255,0.05)] flex justify-between items-center">
                   <div className="flex gap-2">
                     {course.required_skills?.slice(0, 2).map((skill: string, i: number) => (
-                      <span key={i} className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded uppercase">
+                      <span key={i} className="px-2 py-1 bg-slate-800 text-slate-300 text-[10px] font-bold rounded uppercase">
                         {skill}
                       </span>
                     ))}
                     {course.required_skills?.length > 2 && (
-                      <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded">
+                      <span className="px-2 py-1 bg-slate-800 text-slate-300 text-[10px] font-bold rounded">
                         +{course.required_skills.length - 2}
                       </span>
                     )}
                   </div>
-                  <button className="text-indigo-600 font-bold text-sm flex items-center gap-1 group-hover:text-indigo-800 transition-colors">
+                  <button className="text-indigo-400 font-bold text-sm flex items-center gap-1 group-hover:text-indigo-300 transition-colors">
                     Enroll <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>

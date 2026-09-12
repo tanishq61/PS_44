@@ -64,20 +64,21 @@ export default function SignupPage() {
       <div className="w-full max-w-md space-y-6">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Create an Account</h1>
-          <p className="text-gray-500">Sign up to access the AIIA Collaboration Portal</p>
+          <p className="text-gray-500">Sign up to access CareerBridge</p>
         </div>
         <form onSubmit={handleSignup} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium leading-none" htmlFor="role">I am a...</label>
             <select
               id="role"
-              className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="flex h-10 w-full rounded-md border border-gray-600 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              style={{ colorScheme: 'dark' }}
               value={role}
               onChange={(e) => setRole(e.target.value as any)}
             >
-              <option value="student">Student</option>
-              <option value="industry">Industry Partner</option>
-              <option value="institution">Institution Admin</option>
+              <option value="student" className="bg-[#0a0a0a]">Student</option>
+              <option value="industry" className="bg-[#0a0a0a]">Industry Partner</option>
+              <option value="institution" className="bg-[#0a0a0a]">Institution Admin</option>
             </select>
           </div>
           
@@ -87,7 +88,7 @@ export default function SignupPage() {
               id="fullName"
               type="text"
               required
-              className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="flex h-10 w-full rounded-md border border-gray-600 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
             />
@@ -100,7 +101,7 @@ export default function SignupPage() {
                 id="orgName"
                 type="text"
                 required
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="flex h-10 w-full rounded-md border border-gray-600 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
               />
@@ -114,7 +115,7 @@ export default function SignupPage() {
               type="email"
               placeholder="m@example.com"
               required
-              className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="flex h-10 w-full rounded-md border border-gray-600 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -126,7 +127,7 @@ export default function SignupPage() {
               id="password"
               type="password"
               required
-              className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="flex h-10 w-full rounded-md border border-gray-600 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />

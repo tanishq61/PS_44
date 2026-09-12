@@ -118,19 +118,19 @@ export default function CompanyProfilePage() {
     <div className="max-w-xl mx-auto space-y-6 animate-in fade-in duration-300 pb-16">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Organization Profile</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Manage your company credentials and hiring settings.</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">Organization Profile</h1>
+        <p className="text-slate-400 text-sm mt-0.5">Manage your company credentials and hiring settings.</p>
       </div>
 
       {/* Clean Segmented Tab Switcher */}
-      <div className="flex bg-slate-200/80 p-1 rounded-xl w-fit">
+      <div className="flex bg-[#0a0a0a] border border-[rgba(255,255,255,0.05)] p-1 rounded-xl w-fit">
         <button
           type="button"
           onClick={() => { setActiveTab('profile'); setSavedSuccess(false); }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === 'profile'
-              ? 'bg-white text-slate-800 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white/10 text-white shadow-sm'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
           <Building2 size={15} /> Profile
@@ -141,8 +141,8 @@ export default function CompanyProfilePage() {
           onClick={() => { setActiveTab('settings'); setSavedSuccess(false); }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === 'settings'
-              ? 'bg-white text-slate-800 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white/10 text-white shadow-sm'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
           <Settings size={15} /> Settings
@@ -150,23 +150,23 @@ export default function CompanyProfilePage() {
       </div>
 
       {/* Form Card */}
-      <form onSubmit={handleSave} className="bg-white p-7 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+      <form onSubmit={handleSave} className="premium-card p-7 rounded-2xl space-y-5">
         {activeTab === 'profile' ? (
           /* PROFILE SECTION */
           <div className="space-y-4">
             {/* Header Identity */}
-            <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3.5 pb-4 border-b border-[rgba(255,255,255,0.05)]">
               <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
                 {orgName ? orgName.charAt(0).toUpperCase() : <Building2 size={22} />}
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-800">{orgName || 'Organization Name'}</h2>
+                <h2 className="text-base font-bold text-white">{orgName || 'Organization Name'}</h2>
                 <p className="text-xs text-slate-400">{email}</p>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                 Organization Name
               </label>
               <input
@@ -175,12 +175,12 @@ export default function CompanyProfilePage() {
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
                 placeholder="e.g. Acme Corp"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm transition-all"
+                className="premium-input"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                 Contact Person
               </label>
               <input
@@ -189,12 +189,12 @@ export default function CompanyProfilePage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Tanishq Sharma"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm transition-all"
+                className="premium-input"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                 Industry Domain
               </label>
               <input
@@ -202,19 +202,19 @@ export default function CompanyProfilePage() {
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder="e.g. Software & Technology"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm transition-all"
+                className="premium-input"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                 Registered Email
               </label>
               <input
                 type="email"
                 disabled
                 value={email}
-                className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-sm cursor-not-allowed"
+                className="w-full px-3.5 py-2.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.05)] rounded-xl text-slate-500 text-sm cursor-not-allowed"
               />
             </div>
           </div>
@@ -222,13 +222,13 @@ export default function CompanyProfilePage() {
           /* SETTINGS SECTION */
           <div className="space-y-5">
             {/* Match Threshold Slider */}
-            <div className="space-y-3 pb-5 border-b border-slate-100">
+            <div className="space-y-3 pb-5 border-b border-[rgba(255,255,255,0.05)]">
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-800">Minimum AI Match Threshold</h3>
+                  <h3 className="text-sm font-semibold text-white">Minimum AI Match Threshold</h3>
                   <p className="text-xs text-slate-400 mt-0.5">Highlight candidates who meet or exceed this skill match percentage.</p>
                 </div>
-                <span className="text-sm font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
+                <span className="text-sm font-bold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/20">
                   {minMatchScore}%
                 </span>
               </div>
@@ -240,7 +240,7 @@ export default function CompanyProfilePage() {
                 step="5"
                 value={minMatchScore}
                 onChange={(e) => setMinMatchScore(Number(e.target.value))}
-                className="w-full accent-blue-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+                className="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
               />
 
               <div className="flex justify-between text-[10px] text-slate-400 font-medium">
@@ -257,11 +257,11 @@ export default function CompanyProfilePage() {
                   type="checkbox"
                   checked={emailAlerts}
                   onChange={(e) => setEmailAlerts(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 accent-blue-600 rounded cursor-pointer"
+                  className="w-4 h-4 mt-0.5 accent-blue-500 rounded cursor-pointer"
                 />
                 <div>
-                  <div className="text-xs font-semibold text-slate-700">Email notifications</div>
-                  <div className="text-xs text-slate-400 mt-0.5">Receive an email alert when a student applies.</div>
+                  <div className="text-xs font-semibold text-slate-300">Email notifications</div>
+                  <div className="text-xs text-slate-500 mt-0.5">Receive an email alert when a student applies.</div>
                 </div>
               </label>
 
@@ -270,11 +270,11 @@ export default function CompanyProfilePage() {
                   type="checkbox"
                   checked={autoShortlist}
                   onChange={(e) => setAutoShortlist(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 accent-blue-600 rounded cursor-pointer"
+                  className="w-4 h-4 mt-0.5 accent-blue-500 rounded cursor-pointer"
                 />
                 <div>
-                  <div className="text-xs font-semibold text-slate-700">Auto-shortlist 90%+ matches</div>
-                  <div className="text-xs text-slate-400 mt-0.5">Automatically mark high-compatibility applicants as Shortlisted.</div>
+                  <div className="text-xs font-semibold text-slate-300">Auto-shortlist 90%+ matches</div>
+                  <div className="text-xs text-slate-500 mt-0.5">Automatically mark high-compatibility applicants as Shortlisted.</div>
                 </div>
               </label>
             </div>
@@ -282,10 +282,10 @@ export default function CompanyProfilePage() {
         )}
 
         {/* Action Button & Confirmation */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+        <div className="flex items-center justify-between pt-4 border-t border-[rgba(255,255,255,0.05)]">
           <div>
             {savedSuccess && (
-              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 animate-in fade-in">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 animate-in fade-in">
                 <CheckCircle2 size={15} /> Saved successfully
               </span>
             )}
@@ -293,7 +293,7 @@ export default function CompanyProfilePage() {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition-colors disabled:opacity-50"
+            className="premium-button-primary px-6 py-2.5 disabled:opacity-50"
           >
             {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
             {saving ? 'Saving...' : 'Save Changes'}

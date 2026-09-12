@@ -1,86 +1,86 @@
+'use client'
+
 import Link from 'next/link'
-import { ArrowRight, GraduationCap, Briefcase, Building2, BookOpen } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import AudienceSection from '@/components/landing/AudienceSection'
+import NetworkBackground from '@/components/landing/NetworkBackground'
+import LiveMarquee from '@/components/landing/LiveMarquee'
+import InteractiveMatchDemo from '@/components/landing/InteractiveMatchDemo'
+import BentoFeatures from '@/components/landing/BentoFeatures'
+import { useEffect, useRef } from 'react'
 
 export default function Home() {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    import('gsap').then(({ default: gsap }) => {
+      if (!containerRef.current) return
+      
+      const tl = gsap.timeline()
+      
+      tl.fromTo(containerRef.current.querySelector('.hero-text'),
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+      )
+      
+      tl.fromTo(containerRef.current.querySelectorAll('.hero-button'),
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: "power2.out" },
+        "-=0.4"
+      )
+    })
+  }, [])
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen relative z-0" ref={containerRef}>
+      <NetworkBackground />
       <Navbar />
-      <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-blue-50">
+      <main className="flex-1 flex flex-col items-center w-full overflow-x-hidden">
+        {/* Background glow specific to hero */}
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+        
+        <section className="w-full pt-20 pb-4 md:pt-28 md:pb-8 lg:pt-36 lg:pb-12 flex items-center justify-center">
           <div className="container px-4 md:px-6 mx-auto">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none text-blue-950">
-                  Academia-Industry Collaboration Portal
+            <div className="flex flex-col items-center text-center hero-text max-w-[1320px] mx-auto">
+              <div className="flex flex-col items-center max-w-4xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-medium mb-6">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                  </span>
+                  Platform Live
+                </div>
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl/none text-transparent bg-clip-text bg-gradient-to-br from-white via-slate-200 to-slate-500 mb-6">
+                  CareerBridge
                 </h1>
-                <p className="mx-auto max-w-[700px] text-blue-800 md:text-xl">
+                <p className="mx-auto max-w-[700px] text-slate-400 md:text-xl font-light leading-relaxed mb-9">
                   Connecting students, academicians, industry, and institutions for skill mapping, live projects, internships, and placements across all disciplines.
                 </p>
               </div>
-              <div className="space-x-4 pt-4">
-                <Link
-                  href="/signup"
-                  className="inline-flex h-11 items-center justify-center rounded-md bg-blue-600 px-8 text-sm font-medium text-white shadow transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-700 disabled:pointer-events-none disabled:opacity-50"
-                >
-                  Get Started
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/signup" className="hero-button premium-button-primary px-8 py-3.5 text-base">
+                  Get Started <ArrowRight className="ml-2 w-4 h-4" />
                 </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex h-11 items-center justify-center rounded-md border border-blue-200 bg-white px-8 text-sm font-medium shadow-sm transition-colors hover:bg-blue-100 hover:text-blue-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-950 disabled:pointer-events-none disabled:opacity-50"
-                >
+                <Link href="/login" className="hero-button premium-button-secondary px-8 py-3.5 text-base">
                   Log In
                 </Link>
               </div>
             </div>
           </div>
         </section>
-        <section className="w-full py-12 md:py-24 lg:py-32">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="p-4 bg-blue-100 rounded-full">
-                  <GraduationCap className="h-10 w-10 text-blue-700" />
-                </div>
-                <h2 className="text-xl font-bold">For Students</h2>
-                <p className="text-gray-500 text-sm">
-                  Take AI-powered skill assessments, build your digital portfolio, and discover internships tailored to your profile.
-                </p>
-              </div>
-              <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="p-4 bg-blue-100 rounded-full">
-                  <Briefcase className="h-10 w-10 text-blue-700" />
-                </div>
-                <h2 className="text-xl font-bold">For Industry</h2>
-                <p className="text-gray-500 text-sm">
-                  Post opportunities, mentor students, and find the best-matched talent based on verified skill profiles and compatibility.
-                </p>
-              </div>
-              <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="p-4 bg-blue-100 rounded-full">
-                  <Building2 className="h-10 w-10 text-blue-700" />
-                </div>
-                <h2 className="text-xl font-bold">For Institutions</h2>
-                <p className="text-gray-500 text-sm">
-                  Track skill trends, readiness, and placement funnels through comprehensive analytics and reporting dashboards.
-                </p>
-              </div>
-              <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="p-4 bg-blue-100 rounded-full">
-                  <BookOpen className="h-10 w-10 text-blue-700" />
-                </div>
-                <h2 className="text-xl font-bold">For Academicians</h2>
-                <p className="text-gray-500 text-sm">
-                  Collaborate with industry on research, live projects, and workshops to bridge the academia-industry gap.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+
+        <LiveMarquee />
+        
+        <InteractiveMatchDemo />
+        <BentoFeatures />
+
+        <AudienceSection />
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-gray-500">
-          © 2026 Academia-Industry Collaboration Portal. All rights reserved.
+      
+      <footer className="w-full py-8 px-6 border-t border-[rgba(255,255,255,0.05)] text-center relative z-10">
+        <p className="text-sm text-slate-500">
+          © 2026 CareerBridge. All rights reserved.
         </p>
       </footer>
     </div>

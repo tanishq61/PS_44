@@ -149,51 +149,52 @@ export default function StudentOpportunities() {
   }
 
   if (loading) return (
-    <div className="flex h-[50vh] items-center justify-center">
-      <div className="w-10 h-10 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin"></div>
+    <div className="flex h-[50vh] items-center justify-center relative z-10">
+      <div className="w-10 h-10 border-4 border-indigo-500/20 border-t-indigo-400 rounded-full animate-spin"></div>
     </div>
   )
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-20 z-10 relative">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-900 to-blue-900 p-8 md:p-12 rounded-3xl text-white shadow-xl relative overflow-hidden">
+      <div className="premium-card p-8 md:p-12 text-white overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
           <Briefcase className="w-64 h-64 text-indigo-400" />
         </div>
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-200 text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-sm font-medium mb-6">
             <Sparkles size={14} /> AI Match Scoring Active
           </div>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
             Live Opportunities
           </h1>
-          <p className="text-lg md:text-xl text-indigo-200 font-light max-w-2xl mb-8">
+          <p className="text-lg md:text-xl text-slate-400 font-light max-w-2xl mb-8">
             Browse active jobs and internships. When you apply, the AI automatically evaluates your profile against the required skills.
           </p>
           
           <div className="relative max-w-xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
             <input 
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search roles, skills, companies..." 
-              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-lg"
+              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:bg-[rgba(255,255,255,0.05)] transition-all shadow-lg"
             />
           </div>
         </div>
       </div>
 
       {!assessment && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start gap-4">
-          <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 flex items-start gap-4">
+          <div className="p-2 bg-amber-500/20 text-amber-400 rounded-lg shadow-[0_0_15px_rgba(245,158,11,0.2)]">
             <Sparkles size={20} />
           </div>
           <div>
-            <h3 className="font-bold text-amber-900 mb-1">Boost your match scores!</h3>
-            <p className="text-amber-700 text-sm mb-3">You haven't taken the AI skill assessment yet. Companies will see a 0% match score until you verify your skills.</p>
-            <a href="/student/assessment" className="text-sm font-bold text-amber-700 hover:text-amber-900 underline">Take Assessment Now</a>
+            <h3 className="font-bold text-amber-400 mb-1">Boost your match scores!</h3>
+            <p className="text-amber-200/70 text-sm mb-3">You haven't taken the AI skill assessment yet. Companies will see a 0% match score until you verify your skills.</p>
+            <a href="/student/assessment" className="text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors">Take Assessment Now →</a>
           </div>
         </div>
       )}
@@ -201,10 +202,10 @@ export default function StudentOpportunities() {
       {/* Opportunities List */}
       <div className="grid gap-6">
         {filteredOpportunities.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm">
-            <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-slate-700 mb-2">No opportunities found</h3>
-            <p className="text-slate-500">Try adjusting your search or check back soon!</p>
+          <div className="glass-panel p-12 text-center">
+            <Briefcase className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-white mb-2">No opportunities found</h3>
+            <p className="text-slate-400">Try adjusting your search or check back soon!</p>
           </div>
         ) : (
           filteredOpportunities.map((opp) => {
@@ -215,33 +216,33 @@ export default function StudentOpportunities() {
             const estMatchScore = calculateMatchScore(opp.required_skills, assessment?.skill_profile || {})
 
             return (
-              <div key={opp.id} className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200 hover:shadow-md transition-shadow flex flex-col md:flex-row gap-6">
+              <div key={opp.id} className="premium-card p-6 md:p-8 flex flex-col md:flex-row gap-6 group hover:-translate-y-1 transition-transform">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
-                    <span className={`px-3 py-1 text-xs font-bold rounded-md ${opp.type === 'job' ? 'bg-indigo-50 text-indigo-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                    <span className={`px-3 py-1 text-xs font-bold rounded-md ${opp.type === 'job' ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
                       {opp.type ? opp.type.toUpperCase() : 'JOB'}
                     </span>
                     {opp.deadline && (
-                      <span className="flex items-center gap-1 text-sm text-slate-500 font-medium">
+                      <span className="flex items-center gap-1 text-sm text-slate-400 font-medium">
                         <Clock size={14} /> Due {new Date(opp.deadline).toLocaleDateString()}
                       </span>
                     )}
                   </div>
                   
-                  <h3 className="text-2xl font-bold text-slate-800 mb-2">{opp.title}</h3>
-                  <div className="flex items-center gap-2 text-slate-500 text-sm mb-4">
+                  <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">{opp.title}</h3>
+                  <div className="flex items-center gap-2 text-slate-400 text-sm mb-4">
                     <Building2 size={16} /> {opp.profiles?.org_name || opp.profiles?.full_name || 'Unknown Organization'}
                   </div>
                   
-                  <p className="text-slate-600 mb-6 max-w-3xl">
+                  <p className="text-slate-400 font-light mb-6 max-w-3xl leading-relaxed">
                     {opp.description || "No specific description provided."}
                   </p>
 
                   <div>
-                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Required Skills</div>
+                    <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Required Skills</div>
                     <div className="flex flex-wrap gap-2">
                       {(opp.required_skills || []).map((skill: string, i: number) => (
-                        <span key={i} className="px-3 py-1 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg shadow-sm">
+                        <span key={i} className="px-3 py-1 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-slate-300 text-xs font-semibold rounded-lg">
                           {skill}
                         </span>
                       ))}
@@ -249,28 +250,27 @@ export default function StudentOpportunities() {
                   </div>
                 </div>
 
-                <div className="md:w-64 flex flex-col justify-between border-t md:border-t-0 md:border-l border-slate-100 pt-6 md:pt-0 md:pl-6">
-                  <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 text-center mb-6">
-                    <div className="text-xs font-bold text-indigo-600 uppercase mb-1">Est. Match Score</div>
-                    <div className="text-3xl font-black text-slate-800">{assessment ? `${estMatchScore}%` : '??%'}</div>
+                <div className="md:w-64 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[rgba(255,255,255,0.05)] pt-6 md:pt-0 md:pl-6">
+                  <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-4 text-center mb-6">
+                    <div className="text-xs font-bold text-indigo-400 uppercase mb-1">Est. Match Score</div>
+                    <div className="text-3xl font-black text-white">{assessment ? `${estMatchScore}%` : '??%'}</div>
                   </div>
 
                   {hasApplied ? (
-                    <button disabled className="w-full py-3.5 bg-emerald-50 text-emerald-600 font-bold rounded-xl flex items-center justify-center gap-2">
+                    <button disabled className="w-full py-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold rounded-xl flex items-center justify-center gap-2">
                       <CheckCircle2 size={18} /> Applied
                     </button>
                   ) : (
                     <button 
                       onClick={() => handleApply(opp)}
                       disabled={isApplying}
-                      className="w-full group relative flex items-center justify-center gap-2 bg-indigo-600 text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md disabled:opacity-70 disabled:pointer-events-none overflow-hidden"
+                      className="w-full group/btn relative flex items-center justify-center gap-2 premium-button-primary py-3.5 disabled:opacity-50 disabled:pointer-events-none"
                     >
                       {isApplying ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <Loader2 className="w-5 h-5 animate-spin text-white" />
                       ) : (
                         <>
                           <span className="relative z-10">Apply with AI Profile</span>
-                          <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                         </>
                       )}
                     </button>

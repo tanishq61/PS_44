@@ -160,15 +160,15 @@ export default function StudentProfileView() {
         <ArrowLeft size={16} /> Back to Students
       </Link>
 
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+      <div className="premium-card p-8 rounded-3xl">
         <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
           <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+            <div className="w-24 h-24 bg-[#0a0a0a] border border-[rgba(255,255,255,0.05)] rounded-full flex items-center justify-center text-slate-400">
               <User size={48} />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800">{profile.full_name || 'Anonymous Student'}</h1>
-              <div className="flex items-center gap-4 mt-2 text-slate-500 font-medium">
+              <h1 className="text-3xl font-bold text-white">{profile.full_name || 'Anonymous Student'}</h1>
+              <div className="flex items-center gap-4 mt-2 text-slate-400 font-medium">
                 <span className="flex items-center gap-1"><BookOpen size={16} /> Student</span>
                 {profile.email && <span className="flex items-center gap-1"><Mail size={16} /> {profile.email}</span>}
               </div>
@@ -180,12 +180,12 @@ export default function StudentProfileView() {
                 href={resumeLink}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold rounded-xl transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 font-bold rounded-xl transition-colors border border-blue-500/20"
               >
                 <Download size={18} /> Resume
               </a>
             ) : (
-              <button disabled className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-50 text-slate-400 font-bold rounded-xl">
+              <button disabled className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0a0a0a] text-slate-500 font-bold rounded-xl border border-[rgba(255,255,255,0.05)]">
                 No Resume
               </button>
             )}
@@ -194,9 +194,9 @@ export default function StudentProfileView() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-          <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <Award className="text-blue-500" /> AI Verified Skills
+        <div className="premium-card p-8 rounded-3xl">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <Award className="text-blue-400" /> AI Verified Skills
           </h2>
           {skills && Object.keys(skills).length > 0 ? (
             <div className="space-y-4">
@@ -204,36 +204,36 @@ export default function StudentProfileView() {
                 .sort(([, a], [, b]) => Number(b) - Number(a))
                 .map(([skill, score]: [string, any]) => (
                 <div key={skill}>
-                  <div className="flex justify-between text-sm font-bold text-slate-700 mb-1">
+                  <div className="flex justify-between text-sm font-bold text-slate-300 mb-1">
                     <span>{cleanSkillName(skill)}</span>
-                    <span className="text-blue-600">{score}%</span>
+                    <span className="text-blue-400">{score}%</span>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${score}%` }}></div>
+                  <div className="w-full bg-[#0a0a0a] border border-[rgba(255,255,255,0.05)] rounded-full h-2">
+                    <div className="bg-blue-500 h-2 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ width: `${score}%` }}></div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-slate-500">This candidate hasn't completed an AI skill assessment yet.</p>
+            <p className="text-slate-400">This candidate hasn't completed an AI skill assessment yet.</p>
           )}
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-          <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <Briefcase className="text-emerald-500" /> Portfolio & Experience
+        <div className="premium-card p-8 rounded-3xl">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <Briefcase className="text-emerald-400" /> Portfolio & Experience
           </h2>
           {portfolio.length > 0 ? (
             <div className="space-y-6">
               {portfolio.filter(p => !p.title.toLowerCase().includes('resume')).map((item) => (
-                <div key={item.id} className="border-l-2 border-emerald-100 pl-4 py-1">
-                  <h3 className="font-bold text-slate-800">{item.title}</h3>
-                  <div className="text-xs font-bold text-emerald-600 bg-emerald-50 inline-block px-2 py-0.5 rounded uppercase mt-1 mb-2">
+                <div key={item.id} className="border-l-2 border-emerald-500/30 pl-4 py-1">
+                  <h3 className="font-bold text-slate-200">{item.title}</h3>
+                  <div className="text-xs font-bold text-emerald-400 bg-emerald-500/10 inline-block px-2 py-0.5 rounded uppercase mt-1 mb-2 border border-emerald-500/20">
                     {item.type}
                   </div>
-                  <p className="text-sm text-slate-600">{item.description}</p>
+                  <p className="text-sm text-slate-400">{item.description}</p>
                   {item.file_url && (
-                    <a href={item.file_url} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline mt-2 inline-block">
+                    <a href={item.file_url} target="_blank" rel="noreferrer" className="text-sm text-blue-400 hover:underline mt-2 inline-block">
                       View Attachment
                     </a>
                   )}
@@ -241,7 +241,7 @@ export default function StudentProfileView() {
               ))}
             </div>
           ) : (
-            <p className="text-slate-500">No portfolio items added yet.</p>
+            <p className="text-slate-400">No portfolio items added yet.</p>
           )}
         </div>
       </div>

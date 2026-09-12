@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Academia-Industry Collaboration Portal",
+  title: "CareerBridge",
   description: "Connect students, industry, academicians, and institutions for skill mapping and placements.",
 };
 
@@ -16,8 +16,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+    <html lang="en" className="dark">
+      <body className={`${inter.className} min-h-screen flex flex-col bg-[#030303] text-slate-200`}>
+        <div className="ambient-glow" />
         {children}
       </body>
     </html>

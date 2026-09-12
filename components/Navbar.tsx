@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { usePathname } from 'next/navigation'
+import { Briefcase } from 'lucide-react'
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null)
@@ -42,7 +43,17 @@ export default function Navbar() {
     window.location.href = '/'
   }
 
-  // Do not show this global navbar on internal dashboard routes since they have their own sidebars
+  const navRef = useRef(null)
+  
+  useEffect(() => {
+    import('gsap').then(({ default: gsap }) => {
+      gsap.fromTo(navRef.current, 
+        { y: -20, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+      )
+    })
+  }, [])
+
   if (pathname.startsWith('/student') || pathname.startsWith('/company') || pathname.startsWith('/institution')) {
     return null
   }
@@ -50,26 +61,29 @@ export default function Navbar() {
   const dashboardHref = role === 'industry' ? '/company' : role === 'institution' ? '/institution' : '/student/profile'
 
   return (
-    <header className="px-4 lg:px-6 h-14 flex items-center border-b border-gray-200 bg-white">
-      <Link className="flex items-center justify-center" href="/">
-        <span className="font-bold text-xl tracking-tight text-blue-900">Academia AI</span>
+    <header ref={navRef} className="glass-header px-6 lg:px-10 h-16 flex items-center sticky top-0 z-50">
+      <Link className="flex items-center justify-center gap-2.5 group" href="/">
+        <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30 group-hover:bg-indigo-500/30 group-hover:scale-105 transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+          <Briefcase size={16} strokeWidth={2.5} />
+        </div>
+        <span className="font-bold text-xl tracking-tight text-white group-hover:text-indigo-400 transition-colors">CareerBridge</span>
       </Link>
       <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
         {user ? (
           <>
-            <Link className="text-sm font-medium hover:text-blue-600 transition-colors" href={dashboardHref}>
+            <Link className="text-sm font-medium text-slate-300 hover:text-white transition-colors" href={dashboardHref}>
               Dashboard
             </Link>
-            <button onClick={handleSignOut} className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
+            <button onClick={handleSignOut} className="text-sm font-medium text-rose-500 hover:text-rose-400 transition-colors">
               Sign Out
             </button>
           </>
         ) : (
           <>
-            <Link className="text-sm font-medium hover:text-blue-600 transition-colors" href="/login">
+            <Link className="text-sm font-medium text-slate-300 hover:text-white transition-colors" href="/login">
               Log In
             </Link>
-            <Link className="text-sm font-medium bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-all shadow-sm" href="/signup">
+            <Link className="premium-button-primary px-5 py-2 text-sm" href="/signup">
               Sign Up
             </Link>
           </>
