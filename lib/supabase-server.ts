@@ -29,6 +29,9 @@ export async function createClient() {
 }
 
 export async function createAdminClient() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing from environment variables.");
+  }
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,

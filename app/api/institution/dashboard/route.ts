@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase-server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,35 +8,79 @@ export async function GET() {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey);
 
-    // 1. Get total students
-    const { count: totalStudents } = await supabaseAdmin
+    const supabase = await createClient();
+    
+    // 1. Authenticate user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // 2. Verify user is an institution
+    const { data: profile } = await supabase
       .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'student');
+      .select('role')
+      .eq('id', user.id)
+      .single();
 
-    // 2. Get assessments
-    const { data: assessments } = await supabaseAdmin
-      .from('skill_assessments')
-      .select('*');
+    if (!profile || profile.role !== 'institution') {
+      return NextResponse.json({ error: "Forbidden: Not an institution account" }, { status: 403 });
+    }
 
-    // 3. Get applications
-    const { data: applications } = await supabaseAdmin
-      .from('applications')
-      .select('match_score');
+    // 3. Get all students linked to this institution
+    // We can use supabaseAdmin here too for consistency, but filtering by institution_id ensures security
+    const { data: linkedStudents } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('role', 'student')
+      .eq('institution_id', user.id);
+      
+    const studentIds = linkedStudents ? linkedStudents.map(s => s.id) : [];
+    const totalStudents = studentIds.length;
 
-    const assessedCount = assessments?.length || 0;
-    const appCount = applications?.length || 0;
+    // 4. Get latest assessment per student using Admin to bypass RLS
+    let latestAssessments: any[] = [];
+    if (studentIds.length > 0) {
+      const { data: fetchedAssessments } = await supabaseAdmin
+        .from('skill_assessments')
+        .select('*')
+        .in('student_id', studentIds)
+        .order('created_at', { ascending: false });
+        
+      if (fetchedAssessments) {
+        const map = new Map<string, any>();
+        fetchedAssessments.forEach(a => {
+          if (!map.has(a.student_id)) {
+            map.set(a.student_id, a);
+          }
+        });
+        latestAssessments = Array.from(map.values());
+      }
+    }
+
+    // 5. Get applications for these students ONLY using Admin to bypass RLS
+    let applications: any[] = [];
+    if (studentIds.length > 0) {
+      const { data: fetchedApps } = await supabaseAdmin
+        .from('applications')
+        .select('match_score')
+        .in('student_id', studentIds);
+      applications = fetchedApps || [];
+    }
+
+    const assessedCount = latestAssessments.length;
+    const appCount = applications.length;
     
     let avgScore = 0;
-    if (appCount > 0 && applications) {
+    if (appCount > 0) {
       const totalScore = applications.reduce((sum, app) => sum + (Number(app.match_score) || 0), 0);
       avgScore = Math.round(totalScore / appCount);
     }
 
     const stats = {
-      totalStudents: totalStudents || 0,
+      totalStudents,
       assessedStudents: assessedCount,
       totalApplications: appCount,
       averageMatchScore: avgScore
@@ -68,11 +113,10 @@ export async function GET() {
     const gapCounts: Record<string, number> = {};
     CORE_SKILLS.forEach(s => gapCounts[s] = 0);
 
-    if (assessments && assessments.length > 0) {
-      assessments.forEach(ass => {
+    if (latestAssessments.length > 0) {
+      latestAssessments.forEach(ass => {
         const studentGaps = new Set<string>();
 
-        // 1. Check gap_analysis
         if (ass.gap_analysis && typeof ass.gap_analysis === 'object') {
           Object.values(ass.gap_analysis).forEach((roleGaps: any) => {
             if (Array.isArray(roleGaps)) {
@@ -86,7 +130,6 @@ export async function GET() {
           });
         }
 
-        // 2. Check skill_profile scores below threshold (e.g. < 70 is a gap)
         if (ass.skill_profile && typeof ass.skill_profile === 'object') {
           Object.entries(ass.skill_profile).forEach(([skillName, score]) => {
             if (Number(score) < 70) {
@@ -113,21 +156,11 @@ export async function GET() {
       .filter(item => item.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, 6);
-      
-    // 4. Get active postings (optional, but requested in page.tsx)
-    // Wait, in page.tsx they fetch `opportunities` where created_at is ordered.
-    // They did this: supabase.from('opportunities').select('*, applications(id, match_score)')
-    // Since page.tsx already fetches it for the 'Your Active Postings' section, wait!
-    // In page.tsx:
-    // const { data: opps } = await supabase.from('opportunities').select('*, applications(id, match_score)')
-    // Oh! Institution dashboard fetched opportunities to show "Welcome back ... you have X high match candidates across your postings"! 
-    // Wait, the Institution portal has no opportunities of its own, they just view all? 
-    // Ah, wait! The user copied the COMPANY dashboard to the INSTITUTION dashboard earlier and didn't remove the "Opportunities" part?
-    // Let me check app/institution/page.tsx line 32.
 
-    const { data: opps } = await supabaseAdmin
+    const { data: opps } = await supabase
       .from('opportunities')
       .select('*, applications(id, match_score)')
+      .eq('industry_id', user.id)
       .order('created_at', { ascending: false });
 
     return NextResponse.json({

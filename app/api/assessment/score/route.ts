@@ -33,9 +33,27 @@ async function generateWithRetry(model: any, prompt: string, retries = 3, delayM
   throw new Error("All retries failed");
 }
 
+import { z } from 'zod';
+
+const ScoreSchema = z.object({
+  qaPairs: z.array(z.object({
+    question: z.string(),
+    answer: z.string().optional(),
+    correctOption: z.string().optional()
+  })).min(1).max(20),
+  roles: z.array(z.string()).max(10).optional()
+});
+
 export async function POST(req: Request) {
   try {
-    const { qaPairs, roles = ["Software Engineer", "Data Analyst", "Product Manager"] } = await req.json();
+    const json = await req.json().catch(() => ({}));
+    const result = ScoreSchema.safeParse(json);
+    
+    if (!result.success) {
+      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    }
+    
+    const { qaPairs, roles = ["Software Engineer", "Data Analyst", "Product Manager"] } = result.data;
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {

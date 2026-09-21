@@ -44,8 +44,6 @@ export default function InstitutionProfile() {
         .update({ 
           org_name: orgName,
           full_name: orgName, // mirror for consistency
-          website: website,
-          updated_at: new Date().toISOString()
         })
         .eq('id', profile.id)
 

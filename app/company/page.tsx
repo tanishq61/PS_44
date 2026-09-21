@@ -32,6 +32,7 @@ export default function CompanyDashboard() {
       const { data: opps } = await supabase
         .from('opportunities')
         .select('*, applications(id, match_score)')
+        .eq('industry_id', user.id)
         .order('created_at', { ascending: false })
       
       if (opps) {

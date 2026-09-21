@@ -6,23 +6,22 @@ import { createClient } from '@/lib/supabase'
 import {
   GraduationCap,
   LayoutDashboard,
-  Users,
-  Briefcase,
+  Search,
   UserCircle,
   LogOut,
   Menu,
-  X
+  X,
+  BookOpen
 } from 'lucide-react'
 import { useState } from 'react'
 
 const navItems = [
-  { name: 'Dashboard', href: '/institution', icon: LayoutDashboard },
-  { name: 'Student Analytics', href: '/institution/students', icon: Users },
-  { name: 'Opportunities', href: '/institution/opportunities', icon: Briefcase },
-  { name: 'Profile', href: '/institution/profile', icon: UserCircle },
+  { name: 'Dashboard', href: '/academician', icon: LayoutDashboard },
+  { name: 'FDPs & Consultancy', href: '/academician/opportunities', icon: Search },
+  { name: 'Profile', href: '/academician/profile', icon: UserCircle },
 ]
 
-export default function InstitutionLayout({
+export default function AcademicianLayout({
   children,
 }: {
   children: React.ReactNode
@@ -42,16 +41,16 @@ export default function InstitutionLayout({
       {/* Mobile Menu Button */}
       <div className="md:hidden p-4 glass-header flex justify-between items-center z-20 relative">
         <div className="flex items-center gap-2.5 group">
-          <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-            <Briefcase size={14} strokeWidth={2.5} />
+          <div className="w-7 h-7 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.2)]">
+            <BookOpen size={14} strokeWidth={2.5} />
           </div>
-          <span className="font-bold text-xl text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">
+          <span className="font-bold text-xl text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-rose-400">
             CareerBridge
           </span>
         </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="text-slate-400 hover:text-emerald-400 transition-colors"
+          className="text-slate-400 hover:text-orange-400 transition-colors"
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -70,19 +69,19 @@ export default function InstitutionLayout({
       >
         <div className="p-6 hidden md:block">
           <div className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-              <Briefcase size={16} strokeWidth={2.5} />
+            <div className="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.2)]">
+              <BookOpen size={16} strokeWidth={2.5} />
             </div>
-            <span className="font-bold text-2xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">
+            <span className="font-bold text-2xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-rose-400">
               CareerBridge
             </span>
           </div>
-          <div className="mt-1 text-xs font-medium text-slate-500 uppercase tracking-wider">Academic Portal</div>
+          <div className="mt-1 text-xs font-medium text-slate-500 uppercase tracking-wider">Academician Portal</div>
         </div>
 
         <nav className="flex-1 px-4 py-6 md:py-6 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/institution' && pathname.startsWith(item.href))
+            const isActive = pathname === item.href || (item.href !== '/academician' && pathname.startsWith(item.href))
             const Icon = item.icon
 
             return (
@@ -93,15 +92,15 @@ export default function InstitutionLayout({
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden
                   ${isActive
-                    ? 'text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
+                    ? 'text-orange-300 bg-orange-500/10 border border-orange-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-[rgba(255,255,255,0.03)] border border-transparent'
                   }
                 `}
               >
                 {isActive && (
-                  <span className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-r-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                  <span className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 rounded-r-full shadow-[0_0_10px_rgba(249,115,22,0.5)]" />
                 )}
-                <Icon className={`h-5 w-5 transition-colors ${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
+                <Icon className={`h-5 w-5 transition-colors ${isActive ? 'text-orange-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
                 {item.name}
               </Link>
             )

@@ -15,7 +15,7 @@ import {
   Loader2
 } from 'lucide-react'
 
-export default function CompanyOpportunities() {
+export default function InstitutionOpportunities() {
   const [opportunities, setOpportunities] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -23,7 +23,7 @@ export default function CompanyOpportunities() {
 
   // Form State
   const [title, setTitle] = useState('')
-  const [type, setType] = useState('job')
+  const [type, setType] = useState('fdp')
   const [description, setDescription] = useState('')
   const [skills, setSkills] = useState('')
   const [deadline, setDeadline] = useState('')
@@ -100,7 +100,7 @@ export default function CompanyOpportunities() {
           <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
             Opportunities
           </h1>
-          <p className="text-slate-400 mt-1">Manage your job and internship postings.</p>
+          <p className="text-slate-400 mt-1">Manage your Faculty Development Programs and Research projects.</p>
         </div>
         {!showCreateForm && (
           <button 
@@ -131,7 +131,7 @@ export default function CompanyOpportunities() {
                   value={title} 
                   onChange={e => setTitle(e.target.value)} 
                   className="premium-input" 
-                  placeholder="e.g. Software Engineering Intern" 
+                  placeholder="e.g. Advanced AI FDP for Faculty" 
                 />
               </div>
               <div>
@@ -141,10 +141,6 @@ export default function CompanyOpportunities() {
                   onChange={e => setType(e.target.value)} 
                   className="premium-input"
                 >
-                  <option value="job" className="bg-[#0a0a0a]">Job</option>
-                  <option value="internship" className="bg-[#0a0a0a]">Internship</option>
-                  <option value="course" className="bg-[#0a0a0a]">Certification Course</option>
-                  <option value="workshop" className="bg-[#0a0a0a]">Industry Workshop</option>
                   <option value="fdp" className="bg-[#0a0a0a]">FDP (Faculty Development)</option>
                   <option value="consultancy" className="bg-[#0a0a0a]">Consultancy</option>
                   <option value="research" className="bg-[#0a0a0a]">Research Project</option>
@@ -214,12 +210,12 @@ export default function CompanyOpportunities() {
                 <Briefcase className="w-10 h-10 text-blue-400" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">No active postings</h3>
-              <p className="text-slate-400 max-w-sm mb-6 text-center">You haven't created any opportunities yet. Create your first posting to start finding AI-matched talent.</p>
+              <p className="text-slate-400 max-w-sm mb-6 text-center">You haven't created any opportunities yet. Create your first FDP to start upskilling your faculty.</p>
               <button 
                 onClick={() => setShowCreateForm(true)}
                 className="premium-button-primary px-6 py-3"
               >
-                <Plus size={18} /> Post Your First Job
+                <Plus size={18} /> Post Your First FDP
               </button>
             </div>
           ) : (
@@ -239,7 +235,7 @@ export default function CompanyOpportunities() {
                       )}
                     </div>
                   </div>
-                  <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-bold flex flex-col items-center">
                     <span className="text-lg">{opp.applications?.[0]?.count || 0}</span>
                     Applicants
                   </div>
@@ -264,8 +260,8 @@ export default function CompanyOpportunities() {
 
                   <div className="pt-4 border-t border-[rgba(255,255,255,0.05)] flex justify-end">
                     <Link 
-                      href={`/company/opportunities/${opp.id}`}
-                      className="text-blue-400 font-bold text-sm flex items-center gap-1 hover:text-blue-300 transition-colors"
+                      href={`/institution/opportunities/${opp.id}`}
+                      className="text-emerald-400 font-bold text-sm flex items-center gap-1 hover:text-emerald-300 transition-colors"
                     >
                       View Details & Applicants <ArrowRight size={16} />
                     </Link>

@@ -81,7 +81,7 @@ export default function OpportunityDetails() {
             student_id: app.student_id,
             name: app.profiles?.full_name || 'Anonymous Student',
             matchScore: app.match_score || 0,
-            status: app.status,
+            status: app.status || 'applied',
             appliedAt: app.applied_at,
             matchedSkills: matched,
             missingSkills: missing,
@@ -98,6 +98,29 @@ export default function OpportunityDetails() {
     loadOpp()
   }, [id])
 
+  const updateStatus = async (appId: string, newStatus: string) => {
+    // Optimistic UI update
+    setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status: newStatus } : a))
+    // DB update
+    await supabase.from('applications').update({ status: newStatus }).eq('id', appId)
+  }
+
+  const handleDragStart = (e: React.DragEvent, appId: string) => {
+    e.dataTransfer.setData('appId', appId)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault() // necessary to allow drop
+  }
+
+  const handleDrop = (e: React.DragEvent, newStatus: string) => {
+    e.preventDefault()
+    const appId = e.dataTransfer.getData('appId')
+    if (appId) {
+      updateStatus(appId, newStatus)
+    }
+  }
+
   if (loading) return (
     <div className="flex h-[50vh] items-center justify-center">
       <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
@@ -110,6 +133,8 @@ export default function OpportunityDetails() {
       <button onClick={() => router.back()} className="mt-4 text-blue-600 hover:underline">Go back</button>
     </div>
   )
+
+  const columns = ['applied', 'shortlisted', 'selected', 'rejected']
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
@@ -161,112 +186,95 @@ export default function OpportunityDetails() {
         </div>
       </div>
 
-      {/* AI Matched Candidates Section */}
+      {/* Kanban Board Section */}
       <div>
         <div className="flex justify-between items-end mb-6">
           <div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Sparkles className="text-blue-400" /> AI Matched Candidates
+              <Sparkles className="text-blue-400" /> Applicant Tracking (Kanban)
             </h2>
-            <p className="text-slate-400 mt-1 text-sm">Real candidates scored automatically based on their verified skill assessments.</p>
+            <p className="text-slate-400 mt-1 text-sm">Drag and drop candidates across stages. Changes are saved automatically.</p>
           </div>
         </div>
 
-        <div className="grid gap-6">
-          {applicants.length === 0 ? (
-             <div className="premium-card rounded-3xl p-12 text-center flex flex-col items-center">
-               <Users className="w-12 h-12 text-slate-500 mb-4" />
-               <h3 className="text-xl font-bold text-slate-200 mb-2">No applications yet</h3>
-               <p className="text-slate-400">When students apply to this role from the student portal, they will appear here with an AI match score.</p>
-             </div>
-          ) : applicants.map((applicant) => (
-            <div key={applicant.id} className="premium-card p-6 rounded-3xl flex flex-col md:flex-row gap-6 md:items-center">
-              
-              {/* Match Score Ring */}
-              <div className="flex-shrink-0 flex flex-col items-center justify-center relative w-24 h-24">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    className="text-[#0a0a0a]"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                  />
-                  <path
-                    className={applicant.matchScore >= 90 ? 'text-emerald-400' : applicant.matchScore >= 70 ? 'text-blue-400' : 'text-amber-400'}
-                    strokeDasharray={`${applicant.matchScore}, 100`}
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-black text-white">{applicant.matchScore}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Match</span>
-                </div>
-              </div>
-
-              {/* Applicant Info */}
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-xl font-bold text-white">{applicant.name}</h3>
-                    <p className="text-slate-400 text-sm font-medium flex items-center gap-1">
-                      Applied {new Date(applicant.appliedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <span className={`px-3 py-1 text-xs font-bold rounded-full border ${
-                    applicant.status === 'shortlisted' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-slate-800 border-[rgba(255,255,255,0.05)] text-slate-400'
-                  }`}>
-                    {applicant.status.toUpperCase()}
+        {applicants.length === 0 ? (
+          <div className="premium-card rounded-3xl p-12 text-center flex flex-col items-center">
+            <Users className="w-12 h-12 text-slate-500 mb-4" />
+            <h3 className="text-xl font-bold text-slate-200 mb-2">No applications yet</h3>
+            <p className="text-slate-400">When students apply to this role from the student portal, they will appear here with an AI match score.</p>
+          </div>
+        ) : (
+          <div className="flex gap-6 overflow-x-auto pb-4 snap-x">
+            {columns.map((columnStatus) => (
+              <div 
+                key={columnStatus}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, columnStatus)}
+                className="flex-1 min-w-[320px] bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-2xl p-4 flex flex-col h-[700px] snap-center"
+              >
+                <div className="flex items-center justify-between mb-4 px-2">
+                  <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+                    {columnStatus}
+                  </h3>
+                  <span className="text-xs font-bold text-slate-500 bg-[#0a0a0a] px-2 py-1 rounded-full">
+                    {applicants.filter(a => a.status === columnStatus).length}
                   </span>
                 </div>
+                
+                <div className="flex-1 overflow-y-auto space-y-4 pr-1 scrollbar-thin scrollbar-thumb-slate-700">
+                  {applicants.filter(a => a.status === columnStatus).map((applicant) => (
+                    <div 
+                      key={applicant.id} 
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, applicant.id)}
+                      className="premium-card p-4 rounded-xl cursor-grab active:cursor-grabbing hover:border-blue-500/30 transition-all border border-[rgba(255,255,255,0.05)] group relative bg-[#0a0a0a]"
+                    >
+                      {/* Match Badge */}
+                      <div className="absolute top-4 right-4">
+                        <div className={`text-xs font-bold px-2 py-1 rounded-lg border flex flex-col items-center leading-none ${
+                          applicant.matchScore >= 90 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                          applicant.matchScore >= 70 ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 
+                          'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        }`}>
+                          <span className="text-sm">{applicant.matchScore}</span>
+                        </div>
+                      </div>
 
-                <div className="grid md:grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <div className="text-xs font-bold text-emerald-400 mb-1 flex items-center gap-1">
-                      <CheckCircle2 size={12} /> Verified Role Matches
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {applicant.matchedSkills.length > 0 ? applicant.matchedSkills.map((s: string, i: number) => (
-                        <span key={i} className="text-xs px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-md font-semibold border border-emerald-500/20">{s}</span>
-                      )) : <span className="text-xs text-slate-400">No direct matches</span>}
-                    </div>
-                  </div>
-                  
-                  {applicant.missingSkills.length > 0 && (
-                    <div>
-                      <div className="text-xs font-bold text-rose-400 mb-1">Missing / Unverified</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {applicant.missingSkills.map((s: string, i: number) => (
-                          <span key={i} className="text-xs px-2 py-1 bg-rose-500/10 text-rose-400 rounded-md font-semibold border border-rose-500/20">{s}</span>
-                        ))}
+                      <div className="pr-12">
+                        <h4 className="text-base font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">{applicant.name}</h4>
+                        <p className="text-xs text-slate-500 flex items-center gap-1 mb-3">
+                          <Clock size={12} /> {new Date(applicant.appliedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div>
+                          <div className="text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                            <CheckCircle2 size={10} className="text-emerald-400"/> Verified Hits
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {applicant.matchedSkills.length > 0 ? applicant.matchedSkills.map((s: string, i: number) => (
+                              <span key={i} className="text-[10px] px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 rounded border border-emerald-500/20">{s}</span>
+                            )) : <span className="text-[10px] text-slate-500">None</span>}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-[rgba(255,255,255,0.05)] flex gap-2">
+                        <Link 
+                          href={`/company/students/${applicant.student_id}`}
+                          className="flex-1 text-center py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold rounded-lg transition-colors"
+                        >
+                          View Profile
+                        </Link>
                       </div>
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
-
-              {/* Actions */}
-              <div className="flex flex-row md:flex-col gap-2 border-t md:border-t-0 md:border-l border-[rgba(255,255,255,0.05)] pt-4 md:pt-0 md:pl-6">
-                <Link 
-                  href={`/company/students/${applicant.student_id || 'candidate'}`}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-colors"
-                >
-                  View Profile
-                </Link>
-                <button 
-                  onClick={() => alert(`Contact feature for ${applicant.name} is coming soon!`)}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0a0a0a] hover:bg-[#111] text-slate-300 border border-[rgba(255,255,255,0.05)] text-sm font-bold rounded-xl transition-colors"
-                >
-                  <Mail size={16} /> Contact
-                </button>
-              </div>
-
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

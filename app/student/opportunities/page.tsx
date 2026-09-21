@@ -34,6 +34,7 @@ export default function StudentOpportunities() {
     const { data: opps } = await supabase
       .from('opportunities')
       .select('*, profiles(org_name)')
+      .in('type', ['job', 'internship'])
       .order('created_at', { ascending: false })
     
     // 2. Fetch user's latest assessment for matching logic

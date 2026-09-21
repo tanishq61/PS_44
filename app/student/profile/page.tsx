@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { BookOpen, AlertCircle, FileText, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
+import InstitutionLinker from '@/components/student/InstitutionLinker'
 
 const cleanSkillName = (name: string) => {
   const map: Record<string, string> = {
@@ -23,6 +24,7 @@ const cleanSkillName = (name: string) => {
 
 function ProfileContent() {
   const [assessment, setAssessment] = useState<any>(null)
+  const [studentProfile, setStudentProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
   const searchParams = useSearchParams()
@@ -32,6 +34,9 @@ function ProfileContent() {
     async function loadProfile() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        setStudentProfile(profile)
+
         let assessmentData: any = null
         if (assessmentId) {
           const res = await supabase
@@ -184,6 +189,14 @@ function ProfileContent() {
           </div>
         </div>
       </div>
+
+      {/* Institution Linker */}
+      {studentProfile && (
+        <InstitutionLinker 
+          studentId={studentProfile.id} 
+          currentInstitutionId={studentProfile.institution_id} 
+        />
+      )}
     </div>
   )
 }

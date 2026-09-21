@@ -8,7 +8,8 @@ import {
   TrendingUp, 
   Award,
   BookOpen,
-  Loader2
+  Loader2,
+  FileDown
 } from 'lucide-react'
 
 export default function InstitutionDashboard() {
@@ -57,13 +58,20 @@ export default function InstitutionDashboard() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 z-10 relative">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glass-panel p-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glass-panel p-6 print-hide">
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
             Institution Dashboard
           </h1>
           <p className="text-slate-400 mt-1">Monitor student skill development and placement readiness.</p>
         </div>
+        <button 
+          onClick={() => window.print()} 
+          className="flex items-center gap-2 premium-button-primary px-4 py-2"
+        >
+          <FileDown size={18} />
+          Export Analytics (PDF)
+        </button>
       </div>
 
       {/* KPI Cards */}

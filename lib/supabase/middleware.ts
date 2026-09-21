@@ -33,11 +33,17 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protect internal routes
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/student') || request.nextUrl.pathname.startsWith('/company') || request.nextUrl.pathname.startsWith('/institution')
+  // Define public routes
+  const publicRoutes = ['/', '/login', '/signup'];
+  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname);
 
-  if (isProtectedRoute && !user) {
-    // no user, potentially respond by redirecting the user to the login page
+  // Default-deny: if it's not a public route and there is no user, block access
+  if (!isPublicRoute && !user) {
+    // Check if it's an API route (to return 401 instead of redirect)
+    if (request.nextUrl.pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
@@ -48,6 +54,7 @@ export async function updateSession(request: NextRequest) {
     const isCompanyRoute = request.nextUrl.pathname.startsWith('/company')
     const isStudentRoute = request.nextUrl.pathname.startsWith('/student')
     const isInstitutionRoute = request.nextUrl.pathname.startsWith('/institution')
+    const isAcademicianRoute = request.nextUrl.pathname.startsWith('/academician')
     
     // Fetch profile to check role
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
@@ -55,19 +62,25 @@ export async function updateSession(request: NextRequest) {
 
     if (isCompanyRoute && role !== 'industry') {
       const url = request.nextUrl.clone()
-      url.pathname = role === 'institution' ? '/institution' : '/student'
+      url.pathname = role === 'institution' ? '/institution' : (role === 'academician' ? '/academician' : '/student')
       return NextResponse.redirect(url)
     }
 
     if (isStudentRoute && role !== 'student') {
       const url = request.nextUrl.clone()
-      url.pathname = role === 'institution' ? '/institution' : '/company'
+      url.pathname = role === 'institution' ? '/institution' : (role === 'academician' ? '/academician' : '/company')
       return NextResponse.redirect(url)
     }
 
     if (isInstitutionRoute && role !== 'institution') {
       const url = request.nextUrl.clone()
-      url.pathname = role === 'industry' ? '/company' : '/student'
+      url.pathname = role === 'industry' ? '/company' : (role === 'academician' ? '/academician' : '/student')
+      return NextResponse.redirect(url)
+    }
+
+    if (isAcademicianRoute && role !== 'academician') {
+      const url = request.nextUrl.clone()
+      url.pathname = role === 'industry' ? '/company' : (role === 'institution' ? '/institution' : '/student')
       return NextResponse.redirect(url)
     }
   }

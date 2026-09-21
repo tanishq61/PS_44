@@ -34,6 +34,12 @@ export default function PortfolioPage() {
   const [newSkillName, setNewSkillName] = useState('')
   const [newSkillLevel, setNewSkillLevel] = useState('Intermediate')
   const [uploadingResume, setUploadingResume] = useState(false)
+  const [isAddingItem, setIsAddingItem] = useState(false)
+  const [newItemTitle, setNewItemTitle] = useState('')
+  const [newItemType, setNewItemType] = useState('project')
+  const [newItemDesc, setNewItemDesc] = useState('')
+  const [newItemFile, setNewItemFile] = useState<File | null>(null)
+  const [uploadingItem, setUploadingItem] = useState(false)
 
   const supabase = createClient()
 
@@ -202,6 +208,47 @@ export default function PortfolioPage() {
       alert("Error uploading resume: " + error.message)
     } finally {
       setUploadingResume(false)
+    }
+  }
+
+  const handleAddPortfolioItem = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newItemTitle || !newItemType || !userData?.id) return
+
+    setUploadingItem(true)
+    try {
+      const formData = new FormData()
+      formData.append('userId', userData.id)
+      formData.append('title', newItemTitle)
+      formData.append('type', newItemType)
+      formData.append('description', newItemDesc)
+      if (newItemFile) formData.append('file', newItemFile)
+      // Note: If no file is attached, the backend requires a file. For demo, we can just enforce file selection in the UI.
+
+      const res = await fetch('/api/student/portfolio/upload', {
+        method: 'POST',
+        body: formData
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to upload item')
+
+      alert("Item added successfully!")
+      
+      const { data: items } = await supabase
+        .from('portfolio_items')
+        .select('*')
+        .eq('student_id', userData.id)
+        .order('created_at', { ascending: false })
+      if (items) setPortfolioItems(items)
+
+      setIsAddingItem(false)
+      setNewItemTitle('')
+      setNewItemDesc('')
+      setNewItemFile(null)
+    } catch (error: any) {
+      alert("Error adding item: " + error.message)
+    } finally {
+      setUploadingItem(false)
     }
   }
 
@@ -423,11 +470,54 @@ export default function PortfolioPage() {
 
             {/* Right Column (Projects & Experience) */}
             <div className="lg:col-span-2 space-y-10">
-              {/* Projects */}
+              {/* Document Vault / Projects */}
               <section>
-                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <Briefcase className="text-indigo-400" /> Projects & Experience
-                </h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Briefcase className="text-indigo-400" /> Document Vault & Projects
+                  </h2>
+                  <button
+                    onClick={() => setIsAddingItem(!isAddingItem)}
+                    className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 shadow-sm"
+                  >
+                    <Plus size={14} /> Add Item
+                  </button>
+                </div>
+
+                {isAddingItem && (
+                  <form onSubmit={handleAddPortfolioItem} className="mb-6 p-5 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-slate-400 block mb-1.5">Title</label>
+                        <input type="text" required value={newItemTitle} onChange={(e) => setNewItemTitle(e.target.value)} placeholder="e.g. AWS Cloud Certificate" className="w-full px-3 py-2 bg-[#121212] border border-[rgba(255,255,255,0.05)] rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-400 block mb-1.5">Category</label>
+                        <select value={newItemType} onChange={(e) => setNewItemType(e.target.value)} className="w-full px-3 py-2 bg-[#121212] border border-[rgba(255,255,255,0.05)] rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                          <option value="certificate">Certificate</option>
+                          <option value="project">Project</option>
+                          <option value="internship">Internship Report</option>
+                          <option value="achievement">Achievement</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-400 block mb-1.5">Description</label>
+                      <textarea rows={2} required value={newItemDesc} onChange={(e) => setNewItemDesc(e.target.value)} placeholder="Briefly describe this item..." className="w-full px-3 py-2 bg-[#121212] border border-[rgba(255,255,255,0.05)] rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-400 block mb-1.5">Attach Document (PDF/Image)</label>
+                      <input type="file" required onChange={(e) => setNewItemFile(e.target.files?.[0] || null)} className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20 transition-all cursor-pointer" />
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                      <button type="button" onClick={() => setIsAddingItem(false)} className="text-xs px-4 py-2 text-slate-400 hover:text-white transition-colors">Cancel</button>
+                      <button type="submit" disabled={uploadingItem} className="text-xs px-5 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50">
+                        {uploadingItem ? 'Uploading...' : 'Save Document'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
                 {portfolioItems.length > 0 ? (
                   <div className="space-y-6">
                     {portfolioItems.map((item) => (

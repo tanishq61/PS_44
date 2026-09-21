@@ -11,7 +11,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [role, setRole] = useState<'student' | 'industry' | 'institution'>('student')
+  const [role, setRole] = useState<'student' | 'industry' | 'institution' | 'academician'>('student')
   const [orgName, setOrgName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -53,6 +53,7 @@ export default function SignupPage() {
       // Auto-redirect based on role
       if (role === 'student') router.push('/student/profile')
       else if (role === 'industry') router.push('/company')
+      else if (role === 'academician') router.push('/academician')
       else router.push('/institution')
     }
   }
@@ -79,6 +80,7 @@ export default function SignupPage() {
               <option value="student" className="bg-[#0a0a0a]">Student</option>
               <option value="industry" className="bg-[#0a0a0a]">Industry Partner</option>
               <option value="institution" className="bg-[#0a0a0a]">Institution Admin</option>
+              <option value="academician" className="bg-[#0a0a0a]">Academician (Faculty)</option>
             </select>
           </div>
           
@@ -94,9 +96,13 @@ export default function SignupPage() {
             />
           </div>
 
-          {(role === 'industry' || role === 'institution') && (
+          {(role === 'industry' || role === 'institution' || role === 'academician') && (
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none" htmlFor="orgName">Organization Name</label>
+              <label className="text-sm font-medium leading-none" htmlFor="orgName">
+                {role === 'academician' ? 'Currently teaching in (College/University)' : 
+                 role === 'institution' ? 'Institution Name' : 
+                 'Company Name'}
+              </label>
               <input
                 id="orgName"
                 type="text"
@@ -104,6 +110,11 @@ export default function SignupPage() {
                 className="flex h-10 w-full rounded-md border border-gray-600 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
+                placeholder={
+                  role === 'academician' ? 'e.g. Delhi Technological University' :
+                  role === 'institution' ? 'e.g. IIT Bombay' :
+                  'e.g. TechCorp Inc.'
+                }
               />
             </div>
           )}

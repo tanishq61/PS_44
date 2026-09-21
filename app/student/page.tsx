@@ -47,7 +47,7 @@ export default function StudentDashboard() {
             setAssessment(data)
           }
 
-          const { data: opps } = await supabase.from('opportunities').select('*')
+          const { data: opps } = await supabase.from('opportunities').select('*').in('type', ['job', 'internship'])
           if (opps) setOpportunities(opps)
         }
       } catch (err) {
